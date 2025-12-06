@@ -15,7 +15,7 @@ export default function AddSong({ onAdded }) {
     "Slow Highlife",
     "Makossa",
     "Woro",
-    "Contemporary [Modern]",
+    "Contemporary Praise [Modern]",
     "Prayer",
     "Communion",
     "Anointing",
@@ -23,12 +23,13 @@ export default function AddSong({ onAdded }) {
   ];
 
   const allCategories = [
+    "Worship",
     "General Praise",
     "Fast Highlife",
     "Slow Highlife",
     "Makossa",
     "Woro",
-    "Contemporary [Modern]",
+    "Contemporary Praise [Modern]",
     "Prayer",
     "Communion",
     "Anointing",

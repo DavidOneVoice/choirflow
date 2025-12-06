@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import Auth from "./Auth.jsx";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase/firebase";
-
+import Categories from "./Categories.jsx";
 import Home from "./Home";
 import AddSong from "./AddSong";
 import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
+import CategoryPage from "./CategoryPage.jsx";
+import SearchFilters from "./SearchFilters.jsx";
+import { SearchIcon } from "./Icons";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -38,6 +41,11 @@ export default function App() {
       clearTimeout(removeTimer);
     };
   }, []);
+
+  /* ----------------------- SCROLL TO TOP ON TAB SWITCH -------------------- */
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [tab]);
 
   /* ---------------------------- SHOW SPLASH ---------------------------- */
   if (showSplash) {
@@ -82,11 +90,17 @@ export default function App() {
         {tab === "add" && <AddSong onAdded={() => setTab("home")} />}
 
         {tab === "categories" && (
-          <div className="card">
-            <h1>Categories</h1>
-            <p className="muted">Coming soon</p>
-          </div>
+          <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />
         )}
+
+        {/* Dynamic category pages */}
+        {tab.startsWith("cat_") && (
+          <CategoryPage
+            category={tab.replace("cat_", "")}
+            onBack={() => setTab("categories")}
+          />
+        )}
+        {tab === "search" && <SearchFilters />}
 
         {tab === "profile" && (
           <div className="card">
@@ -123,6 +137,10 @@ export default function App() {
 
         <button className="nav-btn" onClick={() => setTab("categories")}>
           <CategoryIcon active={tab === "categories"} />
+        </button>
+
+        <button className="nav-btn" onClick={() => setTab("search")}>
+          <SearchIcon active={tab === "search"} />
         </button>
 
         <button className="nav-btn" onClick={() => setTab("profile")}>

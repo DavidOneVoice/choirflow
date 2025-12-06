@@ -41,3 +41,11 @@ export const ProfileIcon = ({ active }) => (
     <path d="M12 2a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 12c4.42 0 8 2.014 8 4.5V21H4v-2.5C4 16.014 7.58 14 12 14z"></path>
   </svg>
 );
+
+export function SearchIcon({ active }) {
+  return (
+    <span style={{ color: active ? "var(--primary)" : "var(--muted)" }}>
+      🔍
+    </span>
+  );
+}
