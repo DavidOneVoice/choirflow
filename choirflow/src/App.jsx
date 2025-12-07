@@ -1,4 +1,7 @@
+// At the top of App.jsx
 import React, { useEffect, useState } from "react";
+import logo from "./assets/logo.png"; // <-- fixed import
+
 import Auth from "./Auth.jsx";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase/firebase";
@@ -55,7 +58,7 @@ export default function App() {
       <div className="app-root splash-root">
         <div className="splash">
           <img
-            src="/src/assets/logo.png"
+            src={logo} // <-- use imported logo
             className="splash-logo"
             alt="ChoirFlow Logo"
           />
@@ -79,7 +82,7 @@ export default function App() {
       <header className="topbar">
         <div className="brand">
           <img
-            src="/src/assets/logo.png"
+            src={logo} // <-- use imported logo
             className="topbar-logo"
             alt="ChoirFlow Logo"
           />
@@ -93,31 +96,21 @@ export default function App() {
       {/* Page Content */}
       <main className="screen-center">
         {tab === "home" && <Home />}
-
         {tab === "add" && <AddSong onAdded={() => setTab("home")} />}
-
         {tab === "categories" && (
           <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />
         )}
-
-        {/* Dynamic category pages */}
         {tab.startsWith("cat_") && (
           <CategoryPage
             category={tab.replace("cat_", "")}
             onBack={() => setTab("categories")}
           />
         )}
-
         {tab === "search" && <SearchFilters />}
-
-        {/* NEW: Line-Ups page */}
         {tab === "lineups" && <LineUps onBack={() => setTab("profile")} />}
-
-        {/* Profile Page */}
         {tab === "profile" && (
           <div className="card">
             <h1>Profile</h1>
-
             <p className="muted" style={{ marginBottom: 12 }}>
               Username:{" "}
               {user.displayName ||
