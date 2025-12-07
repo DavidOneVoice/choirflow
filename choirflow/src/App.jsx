@@ -5,10 +5,12 @@ import { auth } from "./firebase/firebase";
 import Categories from "./Categories.jsx";
 import Home from "./Home";
 import AddSong from "./AddSong";
-import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
-import CategoryPage from "./CategoryPage.jsx";
 import SearchFilters from "./SearchFilters.jsx";
-import { SearchIcon } from "./Icons";
+import CategoryPage from "./CategoryPage.jsx";
+import LineUps from "./LineUps.jsx";
+
+import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -57,8 +59,10 @@ export default function App() {
             className="splash-logo"
             alt="ChoirFlow Logo"
           />
-          <h1 className="splash-title">ChoirFlow</h1>
         </div>
+        <h4>
+          Powered by <b>OVTech</b>
+        </h4>
       </div>
     );
   }
@@ -79,8 +83,11 @@ export default function App() {
             className="topbar-logo"
             alt="ChoirFlow Logo"
           />
-          <span className="brand-text">ChoirFlow</span>
         </div>
+
+        <button className="nav-btn" onClick={() => setTab("search")}>
+          <SearchIcon />
+        </button>
       </header>
 
       {/* Page Content */}
@@ -100,12 +107,18 @@ export default function App() {
             onBack={() => setTab("categories")}
           />
         )}
+
         {tab === "search" && <SearchFilters />}
 
+        {/* NEW: Line-Ups page */}
+        {tab === "lineups" && <LineUps onBack={() => setTab("profile")} />}
+
+        {/* Profile Page */}
         {tab === "profile" && (
           <div className="card">
             <h1>Profile</h1>
-            <p className="muted">
+
+            <p className="muted" style={{ marginBottom: 12 }}>
               Username:{" "}
               {user.displayName ||
                 localStorage.getItem("choirflow_username") ||
@@ -114,7 +127,15 @@ export default function App() {
 
             <button
               className="btn primary"
-              style={{ width: "100%", marginTop: 14 }}
+              style={{ width: "100%", marginBottom: 14 }}
+              onClick={() => setTab("lineups")}
+            >
+              Create / View Line-Ups
+            </button>
+
+            <button
+              className="btn primary"
+              style={{ width: "100%", marginTop: 10 }}
               onClick={async () => {
                 await auth.signOut();
               }}
@@ -137,10 +158,6 @@ export default function App() {
 
         <button className="nav-btn" onClick={() => setTab("categories")}>
           <CategoryIcon active={tab === "categories"} />
-        </button>
-
-        <button className="nav-btn" onClick={() => setTab("search")}>
-          <SearchIcon active={tab === "search"} />
         </button>
 
         <button className="nav-btn" onClick={() => setTab("profile")}>

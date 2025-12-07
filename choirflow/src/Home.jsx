@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   collection,
   query,
@@ -93,7 +94,7 @@ export default function Home() {
 
   return (
     <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <h1>Your Songs</h1>
+      <h1>All Songs</h1>
 
       {/* SORT SELECTOR */}
       <select
@@ -175,8 +176,9 @@ export default function Home() {
             <div>
               <h3 style={{ color: "var(--primary)" }}>{s.title}</h3>
               <p className="muted" style={{ fontSize: ".9rem" }}>
-                Key: {s.key} • {s.category}
-                {s.tier && <> • Tier {s.tier}</>}
+                Key: {s.key} {s.tier && <> • Tier {s.tier}</>}
+                <br />
+                {s.category}
               </p>
 
               <div
@@ -196,7 +198,7 @@ export default function Home() {
                   className="btn small danger"
                   onClick={() => removeSong(s.id)}
                 >
-                  Delete
+                  <DeleteIcon />
                 </button>
               </div>
             </div>
