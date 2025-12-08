@@ -7,8 +7,10 @@ export default function SearchFilters() {
   const [search, setSearch] = useState("");
   const [keyFilter, setKeyFilter] = useState("");
   const [tierFilter, setTierFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
-  const praiseCategories = [
+  const allCategories = [
+    "Worship",
     "General Praise",
     "Fast Highlife",
     "Slow Highlife",
@@ -58,13 +60,17 @@ export default function SearchFilters() {
   const filtered = songs
     .filter((s) => s.title.toLowerCase().includes(search.toLowerCase()))
     .filter((s) => (keyFilter ? s.key === keyFilter : true))
-    .filter((s) => (tierFilter ? String(s.tier) === String(tierFilter) : true));
+    .filter((s) => (tierFilter ? String(s.tier) === String(tierFilter) : true))
+    .filter((s) => (categoryFilter ? s.category === categoryFilter : true));
 
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
+    <div
+      className="card"
+      style={{ width: "100%", maxWidth: 420, background: "#fff" }}
+    >
       <h1>Search & Filters</h1>
 
-      {/* Search Bar */}
+      {/* SEARCH */}
       <input
         type="text"
         className="input"
@@ -73,13 +79,16 @@ export default function SearchFilters() {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* Filter by Key */}
+      {/* FILTER BY KEY */}
+      <label style={{ marginTop: 15, marginBottom: 5, fontWeight: 600 }}>
+        Filter by Key
+      </label>
       <select
         className="input"
         value={keyFilter}
         onChange={(e) => setKeyFilter(e.target.value)}
       >
-        <option value="">Filter by Key</option>
+        <option value="">All Keys</option>
         {keysList.map((k) => (
           <option key={k} value={k}>
             {k} Major
@@ -87,18 +96,45 @@ export default function SearchFilters() {
         ))}
       </select>
 
-      {/* Filter by Tier */}
+      {/* FILTER BY TIER */}
+      <label style={{ marginTop: 15, marginBottom: 5, fontWeight: 600 }}>
+        Filter by Tier
+      </label>
       <select
         className="input"
         value={tierFilter}
         onChange={(e) => setTierFilter(e.target.value)}
       >
-        <option value="">Filter by Tier</option>
+        <option value="">All Tiers</option>
         <option value="1">Tier 1</option>
         <option value="2">Tier 2</option>
         <option value="3">Tier 3</option>
       </select>
 
+      <label
+        style={{
+          marginTop: 15,
+          marginBottom: 5,
+          fontWeight: "600",
+        }}
+      >
+        Filter by Category
+      </label>
+      <select
+        className="input"
+        style={{ background: "#f8f8f8" }}
+        value={categoryFilter}
+        onChange={(e) => setCategoryFilter(e.target.value)}
+      >
+        <option value="">All Categories</option>
+        {allCategories.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
+
+      {/* RESULTS */}
       <div style={{ marginTop: 20 }}>
         {filtered.length === 0 && (
           <p className="muted">No songs match these filters.</p>
@@ -110,10 +146,10 @@ export default function SearchFilters() {
             className="song-item"
             style={{
               padding: "10px 0",
-              borderBottom: "1px solid #eee",
+              borderTop: "2px solid #eee",
             }}
           >
-            <h3 style={{ color: "var(--primary)" }}>{s.title}</h3>
+            <h3>{s.title}</h3>
             <p className="muted" style={{ fontSize: ".9rem" }}>
               Key: {s.key}
               {s.tier && <> • Tier {s.tier}</>}

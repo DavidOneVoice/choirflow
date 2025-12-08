@@ -121,7 +121,11 @@ export default function Home() {
       {sortedSongs.map((s) => (
         <div
           key={s.id}
-          style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}
+          style={{
+            padding: "10px 0",
+            borderTop: "2px solid #eee",
+            marginBottom: 10,
+          }}
         >
           {/* ---------- EDIT MODE ---------- */}
           {editId === s.id ? (
@@ -174,7 +178,7 @@ export default function Home() {
           ) : (
             /* ---------- NORMAL VIEW ---------- */
             <div>
-              <h3 style={{ color: "var(--primary)" }}>{s.title}</h3>
+              <h3>{s.title}</h3>
               <p className="muted" style={{ fontSize: ".9rem" }}>
                 Key: {s.key} {s.tier && <> • Tier {s.tier}</>}
                 <br />

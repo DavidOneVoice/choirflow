@@ -107,28 +107,89 @@ export default function App() {
           />
         )}
         {tab === "search" && <SearchFilters />}
-        {tab === "lineups" && <LineUps onBack={() => setTab("profile")} />}
+        {tab === "lineups" && (
+          <LineUps
+            onBack={() => setTab("profile")}
+            onViewList={() => setTab("lineupsList")}
+          />
+        )}
+        {tab === "lineupsList" && (
+          <LineUpList onBack={() => setTab("profile")} />
+        )}
+
         {tab === "profile" && (
           <div className="card">
             <h1>Profile</h1>
-            <p className="muted" style={{ marginBottom: 12 }}>
+            <h4 className="muted" style={{ marginBottom: 40 }}>
               Username:{" "}
               {user.displayName ||
                 localStorage.getItem("choirflow_username") ||
                 "One Voice"}
-            </p>
+            </h4>
 
             <button
               className="btn primary"
-              style={{ width: "100%", marginBottom: 14 }}
-              onClick={() => setTab("lineups")}
+              style={{
+                width: "100%",
+                marginBottom: 14,
+                paddingTop: 30,
+                paddingBottom: 30,
+                backgroundColor: "#fff",
+                color: "#000",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+              onClick={() => setTab("lineups")} // Create
             >
-              Create / View Line-Ups
+              Create Line-Up
             </button>
 
             <button
               className="btn primary"
-              style={{ width: "100%", marginTop: 10 }}
+              style={{
+                width: "100%",
+                paddingTop: 30,
+                paddingBottom: 30,
+                backgroundColor: "#fff",
+                color: "#000",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+              onClick={() => setTab("lineupsList")} // View
+            >
+              View Saved Line-Ups
+            </button>
+
+            <button
+              className="btn primary"
+              style={{
+                width: "100%",
+                marginBottom: 14,
+                paddingTop: 30,
+                paddingBottom: 30,
+                backgroundColor: "#fff",
+                color: "#000",
+                marginTop: 14,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+              onClick={() =>
+                window.open(
+                  "https://badrudavidportfolio.netlify.app/#contact",
+                  "_blank"
+                )
+              }
+            >
+              Contact Support Centre
+            </button>
+
+            <button
+              className="btn primary"
+              style={{
+                width: "100%",
+                paddingTop: 30,
+                paddingBottom: 30,
+                backgroundColor: "#fff",
+                color: "#000",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
               onClick={async () => {
                 await auth.signOut();
               }}

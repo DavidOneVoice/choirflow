@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   collection,
   query,
@@ -32,10 +33,15 @@ export default function CategoryPage({ category, onBack }) {
     <div className="card" style={{ width: "100%", maxWidth: 420 }}>
       <button
         className="btn ghost"
-        style={{ marginBottom: 14 }}
+        style={{
+          marginBottom: 14,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+        }}
         onClick={onBack}
       >
-        ← Back
+        <ArrowBackIcon /> <span>Back</span>
       </button>
 
       <h1 style={{ marginBottom: 6 }}>{category}</h1>
@@ -53,10 +59,11 @@ export default function CategoryPage({ category, onBack }) {
             className="song-item"
             style={{
               padding: "10px 0",
-              borderBottom: "1px solid #eee",
+              borderBottom: "2px solid #eee",
+              borderTop: "2px solid #eee",
             }}
           >
-            <h3 style={{ color: "var(--primary)" }}>{s.title}</h3>
+            <h3>{s.title}</h3>
             <p className="muted" style={{ fontSize: ".9rem" }}>
               Key: {s.key}
               {s.tier && <> • Tier {s.tier}</>}
