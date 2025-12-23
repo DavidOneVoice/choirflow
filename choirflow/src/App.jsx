@@ -13,7 +13,7 @@ import LineUpList from "./LineUpList.jsx";
 import LineUpDetails from "./LineUpDetails.jsx";
 import EditLineUp from "./EditLineUp.jsx";
 import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
-import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -79,7 +79,7 @@ export default function App() {
         </div>
 
         <button className="nav-btn" onClick={() => setTab("search")}>
-          <SearchIcon />
+          <FilterListIcon style={{ fontSize: 40 }} />
         </button>
       </header>
 

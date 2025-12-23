@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function SearchFilters() {
   const [songs, setSongs] = useState([]);
@@ -74,13 +75,36 @@ export default function SearchFilters() {
       <h1>Search & Filters</h1>
 
       {/* SEARCH */}
-      <input
-        type="text"
-        className="input"
-        placeholder="Search by title..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div
+        style={{
+          position: "relative",
+          marginBottom: 10,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <SearchIcon
+          style={{
+            position: "absolute",
+            left: 12,
+            top: "40%",
+            transform: "translateY(-50%)",
+            color: "#999",
+            pointerEvents: "none",
+          }}
+        />
+
+        <input
+          type="text"
+          className="input"
+          placeholder="Search by title..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            paddingLeft: 40, // space for icon
+          }}
+        />
+      </div>
 
       {/* FILTER BY KEY */}
       <label style={{ marginTop: 15, marginBottom: 5, fontWeight: 600 }}>
