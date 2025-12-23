@@ -151,7 +151,7 @@ export default function LineUps({ onBack, onViewList }) {
       {/* Save Button */}
       <button
         className="btn primary"
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 20, marginBottom: 30, width: "100%" }}
         onClick={handleSave}
       >
         Save Line-Up

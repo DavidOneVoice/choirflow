@@ -18,10 +18,13 @@ export default function SearchFilters() {
     "Woro [Igbo]",
     "Woro [Yoruba]",
     "Woro [Niger-Delta]",
+    "Revival Songs",
+    "Soul Winning Songs",
+    "Non-Nigerian Songs",
     "Contemporary [Modern] Praise",
-    "Prayer",
-    "Communion",
-    "Anointing",
+    "Prayer Songs",
+    "Communion Praise",
+    "Anointing Praise",
     "Others",
   ];
 

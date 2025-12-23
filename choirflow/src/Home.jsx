@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
+import singers from "./assets/singers.png";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   collection,
@@ -116,7 +117,9 @@ export default function Home() {
         <option value="tier_desc">Tier High–Low</option>
       </select>
 
-      {sortedSongs.length === 0 && <p className="muted">No songs saved yet.</p>}
+      {sortedSongs.length === 0 && (
+        <img src={singers} className="singers" alt="Image of singers" />
+      )}
 
       {sortedSongs.map((s) => (
         <div

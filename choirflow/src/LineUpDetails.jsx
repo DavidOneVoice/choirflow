@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-export default function LineUpDetails({ id, onBack }) {
+export default function LineUpDetails({ id, onBack, onEdit }) {
   const [lineup, setLineup] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +24,7 @@ export default function LineUpDetails({ id, onBack }) {
     fetchData();
   }, [id]);
 
-  /* ----------------------- DELETE LINEUP ----------------------- */
+  /* DELETE */
   const deleteLineup = async () => {
     if (!window.confirm("Delete this lineup permanently?")) return;
 
@@ -53,21 +55,40 @@ export default function LineUpDetails({ id, onBack }) {
     );
   }
 
+  const handleEditClick = () => {
+    // Safe guard: only call if onEdit is a function
+    if (typeof onEdit === "function") {
+      onEdit(lineup.id);
+      return;
+    }
+
+    // Otherwise: warn and provide a fallback UX
+    console.warn(
+      "LineUpDetails: onEdit prop missing or not a function. Click ignored.",
+      { id: lineup.id, receivedOnEdit: onEdit }
+    );
+
+    // User friendly fallback — show a small alert and provide guidance:
+    // (You can replace this with any fallback navigation you prefer)
+    alert(
+      "Edit action is currently unavailable. Please go back and reopen the lineup, or ensure the app routing provides an Edit handler."
+    );
+  };
+
   return (
     <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <h1 style={{ marginBottom: 10 }}>{lineup.title}</h1>
+      <h1 style={{ marginBottom: 4 }}>Line-Up</h1>
 
-      <p className="muted" style={{ marginBottom: 10 }}>
+      <p className="muted" style={{ marginBottom: 12 }}>
         Key: <strong>{lineup.key}</strong>
       </p>
 
-      {/* Worship Songs */}
-      {lineup.worshipSongs?.length > 0 && (
+      {/* WORSHIP */}
+      {lineup.worship?.length > 0 && (
         <>
-          <h3 style={{ color: "var(--primary)", marginTop: 16 }}>
-            Worship Songs
-          </h3>
-          {lineup.worshipSongs.map((w, idx) => (
+          <h3 style={{ marginTop: 12 }}>Worship Songs</h3>
+
+          {lineup.worship.map((w, idx) => (
             <div
               key={idx}
               style={{
@@ -75,19 +96,18 @@ export default function LineUpDetails({ id, onBack }) {
                 borderBottom: "1px solid #eee",
               }}
             >
-              {w}
+              <b>{idx + 1}.</b> {w}
             </div>
           ))}
         </>
       )}
 
-      {/* Praise Songs */}
-      {lineup.praiseSongs?.length > 0 && (
+      {/* PRAISE */}
+      {lineup.praise?.length > 0 && (
         <>
-          <h3 style={{ color: "var(--primary)", marginTop: 16 }}>
-            Praise Songs
-          </h3>
-          {lineup.praiseSongs.map((p, idx) => (
+          <h3 style={{ marginTop: 20 }}>Praise Songs</h3>
+
+          {lineup.praise.map((p, idx) => (
             <div
               key={idx}
               style={{
@@ -95,25 +115,51 @@ export default function LineUpDetails({ id, onBack }) {
                 borderBottom: "1px solid #eee",
               }}
             >
-              {p}
+              <b>{idx + 1}.</b> {p}
             </div>
           ))}
         </>
       )}
 
-      {/* Back & Delete */}
-      <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
-        <button className="btn ghost" style={{ flex: 1 }} onClick={onBack}>
-          Back
-        </button>
-
+      {/* BACK + DELETE */}
+      <div
+        style={{
+          marginTop: 60,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
         <button
           className="btn primary"
           style={{ flex: 1 }}
-          onClick={deleteLineup}
+          onClick={handleEditClick}
         >
-          Delete
+          Edit
         </button>
+
+        <section
+          style={{
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+            marginBottom: 40,
+          }}
+        >
+          <button className="btn ghost" style={{ flex: 1 }} onClick={onBack}>
+            <ArrowBackIcon
+              style={{ verticalAlign: "middle", marginRight: 6 }}
+            />
+          </button>
+
+          <button
+            className="btn ghost"
+            style={{ flex: 1 }}
+            onClick={deleteLineup}
+          >
+            <DeleteIcon style={{ verticalAlign: "middle", marginRight: 6 }} />
+          </button>
+        </section>
       </div>
     </div>
   );

@@ -55,10 +55,10 @@ body,
 }
 
 .splash-logo {
-  width: 250px;
-  height: 250px;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
-  border-radius: 20px;
+  border-radius: 18px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
   margin-bottom: 12px;
 }
@@ -147,6 +147,12 @@ body,
   min-width: 120px;
   background: #1c6e3f;
   color: #fff;
+}
+
+.singers {
+  width: 250px;
+  margin-top: 20px;
+  opacity: 0.85;
 }
 
 .btn.ghost {
