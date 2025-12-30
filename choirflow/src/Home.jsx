@@ -203,7 +203,7 @@ export default function Home() {
                 {/* DELETE BUTTON */}
                 <button
                   className="btn small danger"
-                  onClick={() => removeSong(s.id)}
+                  onClick={() => alert("DELETE CLICKED")}
                 >
                   <DeleteIcon />
                 </button>

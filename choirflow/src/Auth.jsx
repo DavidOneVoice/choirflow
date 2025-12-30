@@ -46,7 +46,7 @@ export default function Auth({ onAuthSuccess }) {
 
   return (
     <div className="auth-screen screen-center">
-      <div className="card">
+      <div className="card" id="auth-card">
         <h1>{isLogin ? "Login" : "Create Account"}</h1>
 
         <form onSubmit={handleSubmit}>

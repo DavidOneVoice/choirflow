@@ -21,6 +21,7 @@ export default function Categories({ onSelectCategory }) {
     "Prayer Songs",
     "Communion Praise",
     "Anointing Praise",
+    "Raggae",
     "Others",
   ];
 

@@ -150,7 +150,7 @@ export default function App() {
           // PROFILE
           if (tab === "profile")
             return (
-              <div className="card">
+              <div className="card" style={{ marginTop: 80 }}>
                 <h1>Profile</h1>
                 <h4 className="muted" style={{ marginBottom: 40 }}>
                   Username:{" "}

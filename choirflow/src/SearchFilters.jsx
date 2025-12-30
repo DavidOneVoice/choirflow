@@ -26,6 +26,7 @@ export default function SearchFilters() {
     "Prayer Songs",
     "Communion Praise",
     "Anointing Praise",
+    "Raggae",
     "Others",
   ];
 

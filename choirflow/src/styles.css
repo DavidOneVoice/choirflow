@@ -114,6 +114,10 @@ body,
   padding: 10px;
 }
 
+#auth-card {
+  margin-top: 40%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 .card h1 {
   font-size: 1.25rem;
   margin-bottom: 6px;

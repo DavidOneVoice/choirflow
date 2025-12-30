@@ -24,6 +24,7 @@ export default function AddSong({ onAdded }) {
     "Prayer Songs",
     "Communion Praise",
     "Anointing Praise",
+    "Raggae",
     "Others",
   ];
 
@@ -43,6 +44,7 @@ export default function AddSong({ onAdded }) {
     "Prayer",
     "Communion",
     "Anointing",
+    "Raggae",
     "Others",
   ];
 
