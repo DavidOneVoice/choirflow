@@ -204,7 +204,6 @@ export default function Home() {
                 <button
                   className="btn small danger"
                   onClick={() => removeSong(s.id)}
-                  onTouchStart={() => removeSong(s.id)}
                 >
                   <DeleteIcon />
                 </button>

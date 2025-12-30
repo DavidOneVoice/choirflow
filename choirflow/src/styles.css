@@ -10,10 +10,6 @@
   box-sizing: border-box;
 }
 
-button {
-  touch-action: manipulation;
-}
-
 html,
 body,
 #root {
@@ -149,7 +145,6 @@ body,
   border: none;
   cursor: pointer;
   font-weight: 700;
-  touch-action: manipulation;
 }
 
 .btn.primary {
