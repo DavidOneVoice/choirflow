@@ -56,23 +56,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
   }
 
   const handleEditClick = () => {
-    // Safe guard: only call if onEdit is a function
-    if (typeof onEdit === "function") {
-      onEdit(lineup.id);
-      return;
-    }
-
-    // Otherwise: warn and provide a fallback UX
-    console.warn(
-      "LineUpDetails: onEdit prop missing or not a function. Click ignored.",
-      { id: lineup.id, receivedOnEdit: onEdit }
-    );
-
-    // User friendly fallback — show a small alert and provide guidance:
-    // (You can replace this with any fallback navigation you prefer)
-    alert(
-      "Edit action is currently unavailable. Please go back and reopen the lineup, or ensure the app routing provides an Edit handler."
-    );
+    onEdit(lineup.id);
   };
 
   return (

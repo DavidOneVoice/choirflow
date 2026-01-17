@@ -3,10 +3,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { db, auth } from "./firebase/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import LineUpDetails from "./LineUpDetails";
+import EditLineUp from "./EditLineUp";
 
 export default function LineUpList({ onBack }) {
   const [lineups, setLineups] = useState([]);
   const [viewId, setViewId] = useState(null);
+  const [editId, setEditId] = useState(null);
 
   /* ---------- FETCH SAVED LINE-UPS ---------- */
   useEffect(() => {
@@ -17,7 +19,6 @@ export default function LineUpList({ onBack }) {
     const unsub = onSnapshot(q, (snap) => {
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-      // Sort by createdAt, fallback to 0 if missing
       list.sort((a, b) => {
         const aTime = a.createdAt?.seconds || 0;
         const bTime = b.createdAt?.seconds || 0;
@@ -25,16 +26,33 @@ export default function LineUpList({ onBack }) {
       });
 
       setLineups(list);
-
-      console.log("Fetched lineups:", list); // Debug old & new entries
     });
 
     return () => unsub();
-  }, [auth.currentUser]);
+  }, []);
+
+  /* ---------- EDIT SCREEN ---------- */
+  if (editId) {
+    return (
+      <EditLineUp
+        id={editId}
+        onBack={() => {
+          setEditId(null);
+          setViewId(null);
+        }}
+      />
+    );
+  }
 
   /* ---------- DETAILS SCREEN ---------- */
   if (viewId) {
-    return <LineUpDetails id={viewId} onBack={() => setViewId(null)} />;
+    return (
+      <LineUpDetails
+        id={viewId}
+        onBack={() => setViewId(null)}
+        onEdit={(id) => setEditId(id)}
+      />
+    );
   }
 
   /* ---------- MAIN LIST PAGE ---------- */

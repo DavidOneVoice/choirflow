@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { db, auth } from "./firebase/firebase";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function EditLineUp({ id, onBack }) {
@@ -31,9 +32,9 @@ export default function EditLineUp({ id, onBack }) {
     "B",
   ];
 
-  /* ---------------- FETCH EXISTING LINE-UP ---------------- */
+  /* ---------------- FETCH LINE-UP ---------------- */
   useEffect(() => {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser || !id) return;
 
     const load = async () => {
       const ref = doc(db, "users", auth.currentUser.uid, "lineups", id);
@@ -41,11 +42,8 @@ export default function EditLineUp({ id, onBack }) {
 
       if (snap.exists()) {
         const data = snap.data();
-
         setTitle(data.title || "");
         setKeySel(data.key || "");
-
-        // match LineUpDetails structure (worship & praise)
         setWorshipList(data.worship || []);
         setPraiseList(data.praise || []);
       }
@@ -69,16 +67,31 @@ export default function EditLineUp({ id, onBack }) {
     setPraiseInput("");
   };
 
-  /* ---------------- REMOVE SONG ---------------- */
+  /* ---------------- EDIT SONG TEXT ---------------- */
+  const updateWorshipText = (idx, value) => {
+    const updated = [...worshipList];
+    updated[idx] = value;
+    setWorshipList(updated);
+  };
+
+  const updatePraiseText = (idx, value) => {
+    const updated = [...praiseList];
+    updated[idx] = value;
+    setPraiseList(updated);
+  };
+
+  /* ---------------- REMOVE SONG (WITH CONFIRM) ---------------- */
   const removeWorship = (idx) => {
+    if (!window.confirm("Remove this worship song?")) return;
     setWorshipList(worshipList.filter((_, i) => i !== idx));
   };
 
   const removePraise = (idx) => {
+    if (!window.confirm("Remove this praise song?")) return;
     setPraiseList(praiseList.filter((_, i) => i !== idx));
   };
 
-  /* ---------------- SAVE CHANGES ---------------- */
+  /* ---------------- SAVE ---------------- */
   const handleUpdate = async () => {
     if (!title.trim()) return alert("Title cannot be empty");
     if (!keySel) return alert("Please select a key");
@@ -102,38 +115,30 @@ export default function EditLineUp({ id, onBack }) {
     );
   }
 
-  /* ---------------- UI ---------------- */
   return (
     <div className="card" style={{ width: "100%", maxWidth: 420 }}>
       <button
         className="btn small"
         onClick={onBack}
-        style={{
-          marginBottom: 10,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-        }}
+        style={{ marginBottom: 10, display: "flex", gap: 4 }}
       >
-        <ArrowBackIcon /> <span>Back</span>
+        <ArrowBackIcon />
       </button>
 
       <h1>Edit Line-Up</h1>
 
-      {/* Title */}
       <input
         className="input"
         placeholder="Line-Up Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        style={{ marginBottom: 12 }}
       />
 
-      {/* Select Key */}
       <select
         className="input"
         value={keySel}
         onChange={(e) => setKeySel(e.target.value)}
+        style={{ marginTop: 10 }}
       >
         <option value="">Select Key</option>
         {keysList.map((k) => (
@@ -143,10 +148,10 @@ export default function EditLineUp({ id, onBack }) {
         ))}
       </select>
 
-      {/* Worship Section */}
-      <h3 style={{ marginTop: 18 }}>Worship Songs</h3>
+      {/* WORSHIP */}
+      <h3 style={{ marginTop: 20 }}>Worship Songs</h3>
 
-      <div style={{ display: "flex", gap: 4 }}>
+      <div style={{ display: "flex", gap: 6 }}>
         <input
           className="input"
           placeholder="Add worship song..."
@@ -157,30 +162,22 @@ export default function EditLineUp({ id, onBack }) {
       </div>
 
       {worshipList.map((w, i) => (
-        <div
-          key={i}
-          className="song-item"
-          style={{
-            padding: "6px 0",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span>
-            <b>{i + 1}.</b> {w}
-          </span>
+        <div key={i} style={{ display: "flex", gap: 6, marginTop: 6 }}>
+          <input
+            className="input"
+            value={w}
+            onChange={(e) => updateWorshipText(i, e.target.value)}
+          />
           <button className="btn small danger" onClick={() => removeWorship(i)}>
-            Remove
+            Delete
           </button>
         </div>
       ))}
 
-      {/* Praise Section */}
-      <h3 style={{ marginTop: 18 }}>Praise Songs</h3>
+      {/* PRAISE */}
+      <h3 style={{ marginTop: 20 }}>Praise Songs</h3>
 
-      <div style={{ display: "flex", gap: 4 }}>
+      <div style={{ display: "flex", gap: 6 }}>
         <input
           className="input"
           placeholder="Add praise song..."
@@ -191,22 +188,14 @@ export default function EditLineUp({ id, onBack }) {
       </div>
 
       {praiseList.map((p, i) => (
-        <div
-          key={i}
-          className="song-item"
-          style={{
-            padding: "6px 0",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span>
-            <b>{i + 1}.</b> {p}
-          </span>
+        <div key={i} style={{ display: "flex", gap: 6, marginTop: 6 }}>
+          <input
+            className="input"
+            value={p}
+            onChange={(e) => updatePraiseText(i, e.target.value)}
+          />
           <button className="btn small danger" onClick={() => removePraise(i)}>
-            Remove
+            <DeleteIcon />
           </button>
         </div>
       ))}
