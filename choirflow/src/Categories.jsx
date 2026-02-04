@@ -11,17 +11,24 @@ export default function Categories({ onSelectCategory }) {
     "Fast Highlife",
     "Slow Highlife",
     "Makossa",
-    "Woro [Igbo]",
-    "Woro [Yoruba]",
-    "Woro [Niger-Delta]",
-    "Revival Songs",
-    "Soul Winning Songs",
+    "Gospel Jazz",
+    "Afrobeat",
+    "Fuji",
+    "Juju",
+    "Folk",
+    "FuNK",
+    "Apala",
+    "Raggae",
     "Non-Nigerian Songs",
     "Contemporary [Modern] Praise",
     "Prayer Songs",
     "Communion Praise",
     "Anointing Praise",
-    "Raggae",
+    "Woro [Igbo]",
+    "Woro [Yoruba]",
+    "Woro [Niger-Delta]",
+    "Revival Songs",
+    "Soul Winning Songs",
     "Others",
   ];
 
@@ -38,7 +45,7 @@ export default function Categories({ onSelectCategory }) {
           data[category] = (data[category] || 0) + 1;
         });
         setCounts(data);
-      }
+      },
     );
 
     return () => unsub();
