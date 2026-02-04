@@ -162,9 +162,11 @@ body,
 }
 
 .singers {
-  width: 250px;
+  width: 300px;
   margin-top: 20px;
+  border-radius: 12px;
   opacity: 0.85;
+  margin-top: 2rem;
 }
 
 .btn.ghost {

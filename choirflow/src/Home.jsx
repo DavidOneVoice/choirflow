@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
-import singers from "./assets/singers.png";
+import option1 from "./assets/option1.jpg";
 import SongItem from "./Components/SongItem";
 
 import {
@@ -114,7 +114,10 @@ export default function Home() {
       </select>
 
       {sortedSongs.length === 0 && (
-        <img src={singers} className="singers" alt="Image of singers" />
+        <div style={{ textAlign: "center", padding: 20 }}>
+          <img src={option1} className="singers" alt="Image of singers" />
+          <p>No songs added yet.</p>
+        </div>
       )}
 
       {sortedSongs.map((s) =>
