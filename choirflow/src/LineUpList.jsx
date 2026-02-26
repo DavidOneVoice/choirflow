@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { db, auth } from "./firebase/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
-import LineUpDetails from "./LineUpDetails";
+import LineUpDetails from "./Components/lineup/LineUpDetails";
 import EditLineUp from "./EditLineUp";
 
 export default function LineUpList({ onBack }) {

@@ -10,7 +10,7 @@ import SearchFilters from "./SearchFilters.jsx";
 import CategoryPage from "./CategoryPage.jsx";
 import LineUps from "./LineUps.jsx";
 import LineUpList from "./LineUpList.jsx";
-import LineUpDetails from "./LineUpDetails.jsx";
+import LineUpDetails from "./Components/lineup/LineUpDetails.jsx";
 import EditLineUp from "./EditLineUp.jsx";
 import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -205,7 +205,7 @@ export default function App() {
                   onClick={() =>
                     window.open(
                       "https://badrudavidportfolio.netlify.app/#contact",
-                      "_blank"
+                      "_blank",
                     )
                   }
                 >

@@ -4,6 +4,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { db, auth } from "./firebase/firebase";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import RecordingsEditor from "./Components/lineup/RecordingsEditor";
 
 export default function EditLineUp({ id, onBack }) {
   const [loading, setLoading] = useState(true);
@@ -169,7 +170,7 @@ export default function EditLineUp({ id, onBack }) {
             onChange={(e) => updateWorshipText(i, e.target.value)}
           />
           <button className="btn small danger" onClick={() => removeWorship(i)}>
-            Delete
+            <DeleteIcon />
           </button>
         </div>
       ))}
@@ -200,9 +201,12 @@ export default function EditLineUp({ id, onBack }) {
         </div>
       ))}
 
+      <h3 style={{ marginTop: 24 }}>Rehearsal Recordings</h3>
+      <RecordingsEditor lineupId={id} />
+
       <button
         className="btn primary"
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 20, marginBottom: 10 }}
         onClick={handleUpdate}
       >
         Save Changes

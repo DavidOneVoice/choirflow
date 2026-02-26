@@ -1,30 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { db, auth } from "./firebase/firebase";
-import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import React from "react";
+import { auth, db } from "../../firebase/firebase";
+import { deleteDoc, doc } from "firebase/firestore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useLineupRecordings } from "../../hooks/useLineupRecordings";
+import RecordingListReadOnly from "../../Components/lineup/RecordingListReadOnly";
+import { useLineupDetails } from "../../hooks/useLineupDetails";
 
 export default function LineUpDetails({ id, onBack, onEdit }) {
-  const [lineup, setLineup] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!auth.currentUser || !id) return;
-
-    const fetchData = async () => {
-      const ref = doc(db, "users", auth.currentUser.uid, "lineups", id);
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        setLineup({ id: snap.id, ...snap.data() });
-      }
-      setLoading(false);
-    };
-
-    fetchData();
-  }, [id]);
-
-  /* DELETE */
+  const { lineup, loading } = useLineupDetails(id);
+  const { recordings } = useLineupRecordings(id);
   const deleteLineup = async () => {
     if (!window.confirm("Delete this lineup permanently?")) return;
 
@@ -55,10 +40,6 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
     );
   }
 
-  const handleEditClick = () => {
-    onEdit(lineup.id);
-  };
-
   return (
     <div className="card" style={{ width: "100%", maxWidth: 420 }}>
       <h1 style={{ marginBottom: 4 }}>Line-Up</h1>
@@ -67,18 +48,13 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
         Key: <strong>{lineup.key}</strong>
       </p>
 
-      {/* WORSHIP */}
       {lineup.worship?.length > 0 && (
         <>
           <h3 style={{ marginTop: 12 }}>Worship Songs</h3>
-
           {lineup.worship.map((w, idx) => (
             <div
               key={idx}
-              style={{
-                padding: "8px 0",
-                borderBottom: "1px solid #eee",
-              }}
+              style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}
             >
               <b>{idx + 1}.</b> {w}
             </div>
@@ -86,26 +62,21 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
         </>
       )}
 
-      {/* PRAISE */}
       {lineup.praise?.length > 0 && (
         <>
           <h3 style={{ marginTop: 20 }}>Praise Songs</h3>
-
           {lineup.praise.map((p, idx) => (
             <div
               key={idx}
-              style={{
-                padding: "8px 0",
-                borderBottom: "1px solid #eee",
-              }}
+              style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}
             >
               <b>{idx + 1}.</b> {p}
             </div>
           ))}
         </>
       )}
-
-      {/* BACK + DELETE */}
+      <h3 style={{ marginTop: 20 }}>Rehearsal Recordings</h3>
+      <RecordingListReadOnly recordings={recordings} />
       <div
         style={{
           marginTop: 60,
@@ -117,7 +88,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
         <button
           className="btn primary"
           style={{ flex: 1 }}
-          onClick={handleEditClick}
+          onClick={() => onEdit(lineup.id)}
         >
           Edit
         </button>
