@@ -1,5 +1,33 @@
 import { useRef, useState } from "react";
 
+function pickBestMimeType() {
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4", // many Android WebViews support this
+    "audio/aac",
+    "audio/3gpp", // older Android fallback
+  ];
+
+  const isSupported = (t) =>
+    typeof window !== "undefined" &&
+    window.MediaRecorder &&
+    typeof window.MediaRecorder.isTypeSupported === "function" &&
+    window.MediaRecorder.isTypeSupported(t);
+
+  const chosen = candidates.find(isSupported);
+  return chosen || ""; // empty = let browser choose
+}
+
+function extFromMime(mime) {
+  const m = (mime || "").toLowerCase();
+  if (m.includes("mp4")) return "m4a";
+  if (m.includes("aac")) return "aac";
+  if (m.includes("3gpp")) return "3gp";
+  if (m.includes("webm")) return "webm";
+  return "webm";
+}
+
 export function useVoiceRecorder() {
   const [recording, setRecording] = useState(false);
   const [recordError, setRecordError] = useState("");
@@ -13,17 +41,43 @@ export function useVoiceRecorder() {
     if (recording) return;
 
     try {
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        setRecordError("Recording not supported on this device/browser.");
+        return;
+      }
+      if (!window.MediaRecorder) {
+        setRecordError("Recording not supported on this device/browser.");
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-
       chunksRef.current = [];
-      const mr = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus",
-        audioBitsPerSecond: 48000,
-      });
+
+      const picked = pickBestMimeType();
+
+      // Try with options first, then fallback to default
+      let mr;
+      try {
+        const opts = {};
+        if (picked) opts.mimeType = picked;
+
+        // compression hint (some browsers ignore)
+        opts.audioBitsPerSecond = 48000;
+
+        mr = new MediaRecorder(stream, opts);
+      } catch (e) {
+        // last resort: no options
+        mr = new MediaRecorder(stream);
+      }
 
       mr.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mr.onerror = () => {
+        setRecordError("Recording failed on this device.");
+        setRecording(false);
       };
 
       mediaRecorderRef.current = mr;
@@ -53,7 +107,7 @@ export function useVoiceRecorder() {
             streamRef.current.getTracks().forEach((t) => t.stop());
           }
 
-          const ext = mime.includes("mp4") ? "m4a" : "webm";
+          const ext = extFromMime(mime);
           const fileName = `VoiceNote_${new Date()
             .toISOString()
             .replace(/[:.]/g, "-")}.${ext}`;
@@ -68,7 +122,12 @@ export function useVoiceRecorder() {
         }
       };
 
-      mr.stop();
+      try {
+        mr.stop();
+      } catch (e) {
+        setRecording(false);
+        resolve(null);
+      }
     });
   };
 
