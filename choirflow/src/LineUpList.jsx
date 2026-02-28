@@ -78,26 +78,32 @@ export default function LineUpList({ onBack }) {
           No line-ups saved yet.
         </p>
       ) : (
-        lineups.map((lu) => (
-          <div
-            key={lu.id}
-            className="song-item"
-            style={{
-              borderBottom: "1px solid #eee",
-              padding: "12px 0",
-              cursor: "pointer",
-            }}
-            onClick={() => setViewId(lu.id)}
-          >
-            <h3 style={{ fontWeight: 600, marginBottom: 4 }}>
-              Key: {lu.key || "Unknown"}
-            </h3>
-            <p className="muted">
-              {lu.worship?.length || 0} Worship • {lu.praise?.length || 0}{" "}
-              Praise
-            </p>
-          </div>
-        ))
+        lineups.map((lu) => {
+          const title = (lu.title || "").trim();
+          const key = lu.key || "Unknown";
+
+          return (
+            <div
+              key={lu.id}
+              className="song-item"
+              style={{
+                borderBottom: "1px solid #eee",
+                padding: "12px 0",
+                cursor: "pointer",
+              }}
+              onClick={() => setViewId(lu.id)}
+            >
+              <h3 style={{ fontWeight: 700, marginBottom: 4 }}>
+                {title ? title : `Line-Up (Key: ${key})`}
+              </h3>
+
+              <p className="muted" style={{ marginTop: 0 }}>
+                Key: {key} • {lu.worship?.length || 0} Worship •{" "}
+                {lu.praise?.length || 0} Praise
+              </p>
+            </div>
+          );
+        })
       )}
     </div>
   );

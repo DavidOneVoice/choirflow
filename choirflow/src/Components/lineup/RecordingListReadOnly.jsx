@@ -5,8 +5,7 @@ export default function RecordingListReadOnly({ recordings }) {
     return (
       <p className="muted" style={{ marginTop: 10 }}>
         No recordings attached yet. To attach your rehearsal recordings and
-        intro, click the Edit button and upload your recorded audio files or
-        record directly from the app.
+        intro, click the Edit button and upload your recorded audio files.
       </p>
     );
   }

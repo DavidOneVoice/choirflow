@@ -8,7 +8,7 @@ export default function LineUps({ onBack, onViewList }) {
   const [keySel, setKeySel] = useState("");
   const [worshipInput, setWorshipInput] = useState("");
   const [praiseInput, setPraiseInput] = useState("");
-
+  const [title, setTitle] = useState("");
   const [worshipList, setWorshipList] = useState([]);
   const [praiseList, setPraiseList] = useState([]);
 
@@ -54,6 +54,7 @@ export default function LineUps({ onBack, onViewList }) {
       return showToast("Add at least one song");
 
     await addDoc(collection(db, "users", auth.currentUser.uid, "lineups"), {
+      title: title.trim() || "",
       key: keySel,
       worship: worshipList,
       praise: praiseList,
@@ -63,7 +64,7 @@ export default function LineUps({ onBack, onViewList }) {
     setKeySel("");
     setWorshipList([]);
     setPraiseList([]);
-
+    setTitle("");
     showToast("Line-Up Saved");
     setShowActions(true);
   };
@@ -87,7 +88,12 @@ export default function LineUps({ onBack, onViewList }) {
       </button>
 
       <h1 style={{ marginTop: 10 }}>Create Line-Up</h1>
-
+      <input
+        className="input"
+        placeholder="Line-Up Title (optional)"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       {/* Key selection */}
       <select
         className="input"

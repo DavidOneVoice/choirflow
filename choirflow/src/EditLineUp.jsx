@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { db, auth } from "./firebase/firebase";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import RecordingsEditor from "./Components/lineup/RecordingsEditor";
 
@@ -17,6 +16,9 @@ export default function EditLineUp({ id, onBack }) {
 
   const [worshipInput, setWorshipInput] = useState("");
   const [praiseInput, setPraiseInput] = useState("");
+
+  const [dragWorshipIndex, setDragWorshipIndex] = useState(null);
+  const [dragPraiseIndex, setDragPraiseIndex] = useState(null);
 
   const keysList = [
     "C",
@@ -33,6 +35,13 @@ export default function EditLineUp({ id, onBack }) {
     "B",
   ];
 
+  const moveItem = (list, from, to) => {
+    const next = [...list];
+    const [picked] = next.splice(from, 1);
+    next.splice(to, 0, picked);
+    return next;
+  };
+
   /* ---------------- FETCH LINE-UP ---------------- */
   useEffect(() => {
     if (!auth.currentUser || !id) return;
@@ -45,8 +54,8 @@ export default function EditLineUp({ id, onBack }) {
         const data = snap.data();
         setTitle(data.title || "");
         setKeySel(data.key || "");
-        setWorshipList(data.worship || []);
-        setPraiseList(data.praise || []);
+        setWorshipList(Array.isArray(data.worship) ? data.worship : []);
+        setPraiseList(Array.isArray(data.praise) ? data.praise : []);
       }
 
       setLoading(false);
@@ -57,48 +66,53 @@ export default function EditLineUp({ id, onBack }) {
 
   /* ---------------- ADD SONGS ---------------- */
   const addWorship = () => {
-    if (!worshipInput.trim()) return;
-    setWorshipList([...worshipList, worshipInput.trim()]);
+    const v = worshipInput.trim();
+    if (!v) return;
+    setWorshipList((prev) => [...prev, v]);
     setWorshipInput("");
   };
 
   const addPraise = () => {
-    if (!praiseInput.trim()) return;
-    setPraiseList([...praiseList, praiseInput.trim()]);
+    const v = praiseInput.trim();
+    if (!v) return;
+    setPraiseList((prev) => [...prev, v]);
     setPraiseInput("");
   };
 
   /* ---------------- EDIT SONG TEXT ---------------- */
   const updateWorshipText = (idx, value) => {
-    const updated = [...worshipList];
-    updated[idx] = value;
-    setWorshipList(updated);
+    setWorshipList((prev) => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
+    });
   };
 
   const updatePraiseText = (idx, value) => {
-    const updated = [...praiseList];
-    updated[idx] = value;
-    setPraiseList(updated);
+    setPraiseList((prev) => {
+      const next = [...prev];
+      next[idx] = value;
+      return next;
+    });
   };
 
   /* ---------------- REMOVE SONG (WITH CONFIRM) ---------------- */
   const removeWorship = (idx) => {
     if (!window.confirm("Remove this worship song?")) return;
-    setWorshipList(worshipList.filter((_, i) => i !== idx));
+    setWorshipList((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const removePraise = (idx) => {
     if (!window.confirm("Remove this praise song?")) return;
-    setPraiseList(praiseList.filter((_, i) => i !== idx));
+    setPraiseList((prev) => prev.filter((_, i) => i !== idx));
   };
 
   /* ---------------- SAVE ---------------- */
   const handleUpdate = async () => {
-    if (!title.trim()) return alert("Title cannot be empty");
     if (!keySel) return alert("Please select a key");
 
     await updateDoc(doc(db, "users", auth.currentUser.uid, "lineups", id), {
-      title,
+      title: title.trim() || "",
       key: keySel,
       worship: worshipList,
       praise: praiseList,
@@ -130,7 +144,7 @@ export default function EditLineUp({ id, onBack }) {
 
       <input
         className="input"
-        placeholder="Line-Up Title"
+        placeholder="Line-Up Title (optional)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
@@ -152,7 +166,7 @@ export default function EditLineUp({ id, onBack }) {
       {/* WORSHIP */}
       <h3 style={{ marginTop: 20 }}>Worship Songs</h3>
 
-      <div style={{ display: "flex", gap: 6 }}>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
         <input
           className="input"
           placeholder="Add worship song..."
@@ -163,14 +177,44 @@ export default function EditLineUp({ id, onBack }) {
       </div>
 
       {worshipList.map((w, i) => (
-        <div key={i} style={{ display: "flex", gap: 6, marginTop: 6 }}>
+        <div
+          key={`${w}-${i}`}
+          draggable
+          onDragStart={() => setDragWorshipIndex(i)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={() => {
+            if (dragWorshipIndex === null || dragWorshipIndex === i) return;
+            setWorshipList((prev) => moveItem(prev, dragWorshipIndex, i));
+            setDragWorshipIndex(null);
+          }}
+          style={{
+            display: "flex",
+            gap: 6,
+            marginTop: 6,
+            alignItems: "center",
+          }}
+        >
+          <span
+            title="Drag to reorder"
+            style={{
+              cursor: "grab",
+              userSelect: "none",
+              padding: "0 6px",
+              fontWeight: 700,
+              opacity: 0.7,
+            }}
+          >
+            ☰
+          </span>
+
           <input
             className="input"
             value={w}
             onChange={(e) => updateWorshipText(i, e.target.value)}
           />
+
           <button className="btn small danger" onClick={() => removeWorship(i)}>
-            <DeleteIcon />
+            Delete
           </button>
         </div>
       ))}
@@ -178,7 +222,7 @@ export default function EditLineUp({ id, onBack }) {
       {/* PRAISE */}
       <h3 style={{ marginTop: 20 }}>Praise Songs</h3>
 
-      <div style={{ display: "flex", gap: 6 }}>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
         <input
           className="input"
           placeholder="Add praise song..."
@@ -189,14 +233,44 @@ export default function EditLineUp({ id, onBack }) {
       </div>
 
       {praiseList.map((p, i) => (
-        <div key={i} style={{ display: "flex", gap: 6, marginTop: 6 }}>
+        <div
+          key={`${p}-${i}`}
+          draggable
+          onDragStart={() => setDragPraiseIndex(i)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={() => {
+            if (dragPraiseIndex === null || dragPraiseIndex === i) return;
+            setPraiseList((prev) => moveItem(prev, dragPraiseIndex, i));
+            setDragPraiseIndex(null);
+          }}
+          style={{
+            display: "flex",
+            gap: 6,
+            marginTop: 6,
+            alignItems: "center",
+          }}
+        >
+          <span
+            title="Drag to reorder"
+            style={{
+              cursor: "grab",
+              userSelect: "none",
+              padding: "0 6px",
+              fontWeight: 700,
+              opacity: 0.7,
+            }}
+          >
+            ☰
+          </span>
+
           <input
             className="input"
             value={p}
             onChange={(e) => updatePraiseText(i, e.target.value)}
           />
+
           <button className="btn small danger" onClick={() => removePraise(i)}>
-            <DeleteIcon />
+            Delete
           </button>
         </div>
       ))}

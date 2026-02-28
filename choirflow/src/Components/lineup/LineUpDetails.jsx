@@ -42,7 +42,9 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
 
   return (
     <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <h1 style={{ marginBottom: 4 }}>Line-Up</h1>
+      <h1 style={{ marginBottom: 4 }}>
+        {lineup.title?.trim() ? lineup.title : "Line-Up"}
+      </h1>
 
       <p className="muted" style={{ marginBottom: 12 }}>
         Key: <strong>{lineup.key}</strong>
