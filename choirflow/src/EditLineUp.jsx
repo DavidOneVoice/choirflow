@@ -4,7 +4,6 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { db, auth } from "./firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import RecordingsEditor from "./Components/lineup/RecordingsEditor";
-import KeyPreviewButton from "./Components/lineup/KeyPreviewButton";
 
 export default function EditLineUp({ id, onBack }) {
   const [loading, setLoading] = useState(true);
@@ -150,22 +149,19 @@ export default function EditLineUp({ id, onBack }) {
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 10 }}>
-        <select
-          className="input"
-          value={keySel}
-          onChange={(e) => setKeySel(e.target.value)}
-          style={{ marginBottom: 0 }}
-        >
-          <option value="">Select Key</option>
-          {keysList.map((k) => (
-            <option key={k} value={k}>
-              {k} Major
-            </option>
-          ))}
-        </select>
-        <KeyPreviewButton selectedKey={keySel} />
-      </div>
+      <select
+        className="input"
+        value={keySel}
+        onChange={(e) => setKeySel(e.target.value)}
+        style={{ marginTop: 10 }}
+      >
+        <option value="">Select Key</option>
+        {keysList.map((k) => (
+          <option key={k} value={k}>
+            {k} Major
+          </option>
+        ))}
+      </select>
 
       {/* WORSHIP */}
       <h3 style={{ marginTop: 20 }}>Worship Songs</h3>
