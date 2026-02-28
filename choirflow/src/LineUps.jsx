@@ -3,6 +3,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { db, auth } from "./firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import KeyPreviewButton from "./Components/lineup/KeyPreviewButton";
 
 export default function LineUps({ onBack, onViewList }) {
   const [keySel, setKeySel] = useState("");
@@ -95,18 +96,22 @@ export default function LineUps({ onBack, onViewList }) {
         onChange={(e) => setTitle(e.target.value)}
       />
       {/* Key selection */}
-      <select
-        className="input"
-        value={keySel}
-        onChange={(e) => setKeySel(e.target.value)}
-      >
-        <option value="">Select Key</option>
-        {keysList.map((k) => (
-          <option key={k} value={k}>
-            {k} Major
-          </option>
-        ))}
-      </select>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <select
+          className="input"
+          value={keySel}
+          onChange={(e) => setKeySel(e.target.value)}
+          style={{ marginBottom: 0 }}
+        >
+          <option value="">Select Key</option>
+          {keysList.map((k) => (
+            <option key={k} value={k}>
+              {k} Major
+            </option>
+          ))}
+        </select>
+        <KeyPreviewButton selectedKey={keySel} />
+      </div>
 
       {/* Worship */}
       <h3 style={{ marginTop: 18 }}>Worship Songs</h3>
