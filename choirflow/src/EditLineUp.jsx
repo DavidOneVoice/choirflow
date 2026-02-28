@@ -214,7 +214,7 @@ export default function EditLineUp({ id, onBack }) {
           />
 
           <button className="btn small danger" onClick={() => removeWorship(i)}>
-            Delete
+            <DeleteIcon />
           </button>
         </div>
       ))}
@@ -270,7 +270,7 @@ export default function EditLineUp({ id, onBack }) {
           />
 
           <button className="btn small danger" onClick={() => removePraise(i)}>
-            Delete
+            <DeleteIcon />
           </button>
         </div>
       ))}
