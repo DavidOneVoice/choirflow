@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatBytes, formatDuration } from "../../utils/format";
 import DeleteIcon from "@mui/icons-material/Delete";
+import "./RecordingList.css";
 
 export default function RecordingList({ recordings, onDelete, onRename }) {
   const [editId, setEditId] = useState(null);
@@ -87,16 +88,9 @@ export default function RecordingList({ recordings, onDelete, onRename }) {
                 <audio className="cf-rec__audio" controls src={rec.url} />
 
                 <button
-                  className="cf-rec__btn cf-rec__btn--danger"
+                  className="cf-rec__btn cf-rec__btn--danger cf-rec__btn--iconText"
                   onClick={() => onDelete(rec)}
                   type="button"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 4,
-                    marginTop: 8,
-                  }}
                 >
                   <DeleteIcon /> <span>Delete Recording</span>
                 </button>

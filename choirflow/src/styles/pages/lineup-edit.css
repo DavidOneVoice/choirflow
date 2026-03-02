@@ -1,0 +1,276 @@
+/* =========================
+   Edit LineUp (Scoped)
+   Classes: lineup-edit__*
+   Brand: white + #1c6e3f
+   ========================= */
+
+.lineup-edit {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+}
+
+/* Back button */
+.lineup-edit__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+/* Header */
+.lineup-edit__header {
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.lineup-edit__title {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+.lineup-edit__sub {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Sections */
+.lineup-edit__section {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 30px rgba(10, 10, 10, 0.05);
+}
+
+.lineup-edit__label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: rgba(0, 0, 0, 0.65);
+  margin-bottom: 6px;
+}
+
+.lineup-edit__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.lineup-edit__h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+.lineup-edit__count {
+  font-size: 0.9rem;
+}
+
+.lineup-edit__hint {
+  font-size: 0.85rem;
+}
+
+/* Inputs in this page */
+.lineup-edit__input {
+  margin-bottom: 0;
+}
+
+/* Select */
+.lineup-edit__select {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* Chip */
+.lineup-edit__chip {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  background: rgba(28, 110, 63, 0.06);
+  color: #1c6e3f;
+  font-weight: 900;
+}
+
+.lineup-edit__chipMuted {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  font-weight: 800;
+}
+
+/* Keyboard button */
+.lineup-edit__kbdBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  background: rgba(28, 110, 63, 0.06);
+  color: #1c6e3f;
+  font-weight: 900;
+}
+
+.lineup-edit__kbdBtn:hover {
+  transform: translateY(-1px);
+}
+
+.lineup-edit__kbdIcon {
+  font-size: 18px;
+}
+
+/* Add row */
+.lineup-edit__adder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.lineup-edit__addBtn {
+  white-space: nowrap;
+  border-radius: 14px;
+}
+
+/* List */
+.lineup-edit__list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Item row */
+.lineup-edit__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 22px rgba(10, 10, 10, 0.05);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border 0.16s ease;
+}
+
+.lineup-edit__item:hover {
+  transform: translateY(-1px);
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  box-shadow: 0 18px 40px rgba(10, 10, 10, 0.09);
+}
+
+.lineup-edit__grab {
+  cursor: grab;
+  user-select: none;
+  padding: 0 6px;
+  font-weight: 950;
+  opacity: 0.7;
+}
+
+.lineup-edit__itemInput {
+  flex: 1;
+  margin: 0;
+}
+
+.lineup-edit__delBtn {
+  border-radius: 14px;
+}
+
+/* Recordings wrapper */
+.lineup-edit__recordings {
+  margin-top: 10px;
+}
+
+/* Save */
+.lineup-edit__save {
+  margin-top: 16px;
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(28, 110, 63, 0.22);
+}
+
+/* Modal */
+.lineup-edit__modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 14px;
+  animation: leFadeIn 0.16s ease-out;
+}
+
+@keyframes leFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lineup-edit__modalSheet {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 22px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+  animation: leSheetUp 0.18s ease-out;
+}
+
+@keyframes leSheetUp {
+  from {
+    transform: translateY(16px);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.lineup-edit__modalTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.lineup-edit__modalTitle {
+  margin: 0;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+.lineup-edit__modalSub {
+  margin: 0;
+}
+
+.lineup-edit__close {
+  width: 44px;
+  height: 40px;
+  border-radius: 14px;
+}

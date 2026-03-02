@@ -6,10 +6,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useLineupRecordings } from "../../hooks/useLineupRecordings";
 import RecordingListReadOnly from "../../Components/lineup/RecordingListReadOnly";
 import { useLineupDetails } from "../../hooks/useLineupDetails";
+import "./LineUpDetails.css";
 
 export default function LineUpDetails({ id, onBack, onEdit }) {
   const { lineup, loading } = useLineupDetails(id);
   const { recordings } = useLineupRecordings(id);
+
   const deleteLineup = async () => {
     if (!window.confirm("Delete this lineup permanently?")) return;
 
@@ -23,7 +25,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
 
   if (loading) {
     return (
-      <div className="card">
+      <div className="card lineup-details">
         <p className="muted">Loading lineup...</p>
       </div>
     );
@@ -31,7 +33,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
 
   if (!lineup) {
     return (
-      <div className="card">
+      <div className="card lineup-details">
         <p className="muted">Line-up not found.</p>
         <button className="btn primary" onClick={onBack}>
           Back
@@ -40,84 +42,109 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
     );
   }
 
+  const title = lineup.title?.trim() ? lineup.title : "Line-Up";
+
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <h1 style={{ marginBottom: 4 }}>
-        {lineup.title?.trim() ? lineup.title : "Line-Up"}
-      </h1>
+    <div className="card lineup-details">
+      <header className="lineup-details__header">
+        <div className="lineup-details__titleWrap">
+          <h1 className="lineup-details__title">{title}</h1>
 
-      <p className="muted" style={{ marginBottom: 12 }}>
-        Key: <strong>{lineup.key}</strong>
-      </p>
+          <div className="lineup-details__meta">
+            <span className="lineup-details__pill">
+              Key: <b>{lineup.key}</b>
+            </span>
+            <span className="lineup-details__counts muted">
+              {lineup.worship?.length || 0} Worship •{" "}
+              {lineup.praise?.length || 0} Praise
+            </span>
+          </div>
+        </div>
+      </header>
 
+      {/* WORSHIP */}
       {lineup.worship?.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 12 }}>Worship Songs</h3>
-          {lineup.worship.map((w, idx) => (
-            <div
-              key={idx}
-              style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}
-            >
-              <b>{idx + 1}.</b> {w}
-            </div>
-          ))}
-        </>
+        <section className="lineup-details__section">
+          <div className="lineup-details__sectionHead">
+            <h3 className="lineup-details__sectionTitle">Worship Songs</h3>
+            <span className="lineup-details__badge">
+              {lineup.worship.length}
+            </span>
+          </div>
+
+          <div className="lineup-details__list">
+            {lineup.worship.map((w, idx) => (
+              <div key={idx} className="lineup-details__row">
+                <span className="lineup-details__index">{idx + 1}</span>
+                <b className="lineup-details__text">{w}</b>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
+      {/* PRAISE */}
       {lineup.praise?.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 20 }}>Praise Songs</h3>
-          {lineup.praise.map((p, idx) => (
-            <div
-              key={idx}
-              style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}
-            >
-              <b>{idx + 1}.</b> {p}
-            </div>
-          ))}
-        </>
+        <section className="lineup-details__section">
+          <div className="lineup-details__sectionHead">
+            <h3 className="lineup-details__sectionTitle">Praise Songs</h3>
+            <span className="lineup-details__badge">
+              {lineup.praise.length}
+            </span>
+          </div>
+
+          <div className="lineup-details__list">
+            {lineup.praise.map((p, idx) => (
+              <div key={idx} className="lineup-details__row">
+                <span className="lineup-details__index">{idx + 1}</span>
+                <b className="lineup-details__text">{p}</b>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
-      <h3 style={{ marginTop: 20 }}>Rehearsal Recordings</h3>
-      <RecordingListReadOnly recordings={recordings} />
-      <div
-        style={{
-          marginTop: 60,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
+
+      {/* RECORDINGS */}
+      <section className="lineup-details__section">
+        <div className="lineup-details__sectionHead">
+          <h3 className="lineup-details__sectionTitle">Rehearsal Recordings</h3>
+          <span className="lineup-details__badge">
+            {recordings?.length || 0}
+          </span>
+        </div>
+
+        <div className="lineup-details__recordings">
+          <RecordingListReadOnly recordings={recordings} />
+        </div>
+      </section>
+
+      {/* ACTIONS */}
+      <footer className="lineup-details__footer">
         <button
-          className="btn primary"
-          style={{ flex: 1 }}
+          className="btn primary lineup-details__primaryBtn"
           onClick={() => onEdit(lineup.id)}
         >
           Edit
         </button>
 
-        <section
-          style={{
-            display: "flex",
-            gap: 10,
-            alignItems: "center",
-            marginBottom: 40,
-          }}
-        >
-          <button className="btn ghost" style={{ flex: 1 }} onClick={onBack}>
-            <ArrowBackIcon
-              style={{ verticalAlign: "middle", marginRight: 6 }}
-            />
+        <div className="lineup-details__actionsRow">
+          <button
+            className="btn ghost lineup-details__iconBtn"
+            onClick={onBack}
+            title="Back"
+          >
+            <ArrowBackIcon />
           </button>
 
           <button
-            className="btn ghost"
-            style={{ flex: 1 }}
+            className="btn ghost lineup-details__iconBtn lineup-details__deleteBtn"
             onClick={deleteLineup}
+            title="Delete"
           >
-            <DeleteIcon style={{ verticalAlign: "middle", marginRight: 6 }} />
+            <DeleteIcon />
           </button>
-        </section>
-      </div>
+        </div>
+      </footer>
     </div>
   );
 }

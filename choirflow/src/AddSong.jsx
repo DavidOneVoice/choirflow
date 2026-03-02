@@ -14,12 +14,12 @@ export default function AddSong({ onAdded }) {
     "Fast Highlife",
     "Slow Highlife",
     "Makossa",
-    "Gospel Jazz",
+    "Jazz",
     "Afrobeat",
     "Fuji",
     "Juju",
     "Folk",
-    "FuNK",
+    "FunK",
     "Apala",
     "Raggae",
     "Non-Nigerian Songs",
@@ -41,12 +41,12 @@ export default function AddSong({ onAdded }) {
     "Fast Highlife",
     "Slow Highlife",
     "Makossa",
-    "Gospel Jazz",
+    "Jazz",
     "Afrobeat",
     "Fuji",
     "Juju",
     "Folk",
-    "FuNK",
+    "FunK",
     "Apala",
     "Raggae",
     "Non-Nigerian Songs",
@@ -98,7 +98,7 @@ export default function AddSong({ onAdded }) {
       setCategory("");
       setTier("");
 
-      onAdded(); // Switch back to Home after save
+      onAdded();
     } catch (err) {
       console.error(err);
       alert("Error saving song: " + err.message);

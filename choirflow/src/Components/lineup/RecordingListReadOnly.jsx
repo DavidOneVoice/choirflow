@@ -1,24 +1,19 @@
 import { formatBytes, formatDuration } from "../../utils/format";
+import "./RecordingListReadOnly.css";
 
 export default function RecordingListReadOnly({ recordings }) {
   if (!recordings || recordings.length === 0) {
     return (
-      <p className="muted" style={{ marginTop: 10 }}>
+      <p className="cf-rec-ro__empty">
         No recordings attached yet. To attach your rehearsal recordings and
-        intro, click the Edit button and upload your recorded audio files.
+        intro, click the <b>Edit</b> button and upload your recorded audio
+        files.
       </p>
     );
   }
 
   return (
-    <div
-      style={{
-        marginTop: 14,
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-      }}
-    >
+    <div className="cf-rec-ro__list">
       {recordings.map((rec) => {
         const durationLabel =
           typeof rec.durationSeconds === "number" && rec.durationSeconds > 0
@@ -26,23 +21,20 @@ export default function RecordingListReadOnly({ recordings }) {
             : "—";
 
         return (
-          <div
-            key={rec.id}
-            style={{ paddingTop: 12, borderTop: "2px solid #eee" }}
-          >
-            <p style={{ marginBottom: 6 }}>
-              <b>{rec.name}</b>
+          <div key={rec.id} className="cf-rec-ro__item">
+            <div className="cf-rec-ro__top">
+              <p className="cf-rec-ro__name" title={rec.name}>
+                {rec.name}
+              </p>
+              <span className="cf-rec-ro__badge">Audio</span>
+            </div>
+
+            <p className="cf-rec-ro__meta">
+              <span>Duration: {durationLabel}</span>
+              {rec.size ? <span> • Size: {formatBytes(rec.size)}</span> : null}
             </p>
 
-            <p
-              className="muted"
-              style={{ marginTop: 0, marginBottom: 10, fontSize: ".9rem" }}
-            >
-              Duration: {durationLabel}
-              {rec.size ? ` • Size: ${formatBytes(rec.size)}` : ""}
-            </p>
-
-            <audio controls style={{ width: "100%" }} src={rec.url} />
+            <audio className="cf-rec-ro__audio" controls src={rec.url} />
           </div>
         );
       })}

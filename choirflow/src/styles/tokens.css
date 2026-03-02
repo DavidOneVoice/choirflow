@@ -1,0 +1,41 @@
+:root {
+  /* ===== Brand Colors (RETAINED) ===== */
+  --brand: #1c6e3f; /* your green */
+  --brand-2: #155833; /* deeper green (already in your splash gradient) */
+  --white: #ffffff;
+
+  /* ===== Premium Neutrals (blend well) ===== */
+  --bg: #f6f8f6; /* soft off-white background */
+  --surface: #ffffff; /* cards */
+  --surface-2: #f1f5f2; /* subtle sections */
+  --text: #0f172a; /* deep ink */
+  --muted: #64748b; /* slate muted text */
+
+  /* ===== Supporting Accent (still green-family) ===== */
+  --mint: #22c55e; /* optional highlight */
+  --gold: #d6b35f; /* optional “premium” tiny accent (sparingly) */
+  /* NOTE: gold is optional; we’ll use it like “sparkle”, not as main color */
+
+  /* ===== Borders & shadows ===== */
+  --stroke: rgba(15, 23, 42, 0.08);
+  --shadow-1: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-2: 0 18px 55px rgba(15, 23, 42, 0.12);
+
+  /* ===== Radius ===== */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+
+  /* ===== Motion ===== */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 160ms;
+  --t-med: 260ms;
+
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Arial;
+  font-size: 16px;
+}

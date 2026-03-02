@@ -2,6 +2,7 @@ import { useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { auth } from "./firebase/firebase";
+import "./styles/pages/auth.css";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -68,15 +69,23 @@ export default function Auth({ onAuthSuccess }) {
   };
 
   return (
-    <div className="auth-screen screen-center">
-      <div className="card" id="auth-card">
-        <h1>
+    <div className="auth-screen screen-center auth-page">
+      <div className="card auth-card" id="auth-card">
+        <h1 className="auth-title">
           {mode === "login" && "Login"}
           {mode === "signup" && "Create Account"}
           {mode === "reset" && "Reset Password"}
         </h1>
 
-        <form onSubmit={handleSubmit}>
+        <p className="muted auth-sub">
+          {mode === "login" &&
+            "Welcome back — manage your choir records easily."}
+          {mode === "signup" &&
+            "Create your account to start saving songs & line-ups."}
+          {mode === "reset" && "Enter your email and we’ll send a reset link."}
+        </p>
+
+        <form onSubmit={handleSubmit} className="auth-form">
           {mode === "signup" && (
             <input
               type="text"
@@ -98,29 +107,21 @@ export default function Auth({ onAuthSuccess }) {
           />
 
           {mode !== "reset" && (
-            <div style={{ position: "relative" }}>
+            <div className="auth-passWrap">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="input"
+                className="input auth-passInput"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ paddingRight: 40 }}
               />
 
               <span
+                className="auth-eyeBtn"
                 onClick={() => setShowPassword((prev) => !prev)}
-                style={{
-                  position: "absolute",
-                  right: 12,
-                  top: "35%",
-                  transform: "translateY(-50%)",
-                  cursor: "pointer",
-                  color: "#666",
-                  display: "flex",
-                  alignItems: "center",
-                }}
+                role="button"
+                tabIndex={0}
               >
                 {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
               </span>
@@ -128,7 +129,7 @@ export default function Auth({ onAuthSuccess }) {
           )}
 
           <button
-            className="btn primary auth-btn"
+            className="btn primary auth-submit"
             type="submit"
             disabled={loading}
           >
@@ -142,60 +143,69 @@ export default function Auth({ onAuthSuccess }) {
           </button>
         </form>
 
-        {/* TOGGLES */}
-        {mode === "login" && (
-          <>
-            <p
-              className="muted toggle-auth"
-              style={{
-                textDecoration: "underline",
-                marginTop: "2rem",
-              }}
+        <div className="auth-links">
+          {mode === "login" && (
+            <>
+              <div
+                className="auth-link"
+                onClick={() => {
+                  setMode("reset");
+                  resetForm();
+                }}
+              >
+                Forgot password?
+              </div>
+
+              <div
+                className="auth-hint"
+                onClick={() => {
+                  setMode("signup");
+                  resetForm();
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                Don’t have an account?{" "}
+                <span
+                  className="auth-link"
+                  style={{ textDecoration: "underline" }}
+                >
+                  Sign up
+                </span>
+              </div>
+            </>
+          )}
+
+          {mode === "signup" && (
+            <div
+              className="auth-hint"
               onClick={() => {
-                setMode("reset");
+                setMode("login");
+                resetForm();
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              Already have an account?{" "}
+              <span
+                className="auth-link"
+                style={{ textDecoration: "underline" }}
+              >
+                Login
+              </span>
+            </div>
+          )}
+
+          {mode === "reset" && (
+            <div
+              className="auth-link"
+              onClick={() => {
+                setMode("login");
                 resetForm();
               }}
             >
-              Forgot password?
-            </p>
-
-            <p
-              className="muted toggle-auth"
-              onClick={() => {
-                setMode("signup");
-                resetForm();
-              }}
-            >
-              <span style={{ color: "#000" }}>Don’t have an account?</span>{" "}
-              <span style={{ textDecoration: "underline" }}>Sign up</span>
-            </p>
-          </>
-        )}
-
-        {mode === "signup" && (
-          <p
-            className="muted toggle-auth"
-            onClick={() => {
-              setMode("login");
-              resetForm();
-            }}
-          >
-            <span style={{ color: "#000" }}>Already have an account?</span>{" "}
-            <span style={{ textDecoration: "underline" }}>Login</span>
-          </p>
-        )}
-
-        {mode === "reset" && (
-          <p
-            className="muted toggle-auth"
-            onClick={() => {
-              setMode("login");
-              resetForm();
-            }}
-          >
-            Back to Login
-          </p>
-        )}
+              Back to Login
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

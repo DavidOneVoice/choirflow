@@ -1,0 +1,60 @@
+/* RecordingListReadOnly.css */
+.cf-rec-ro__empty {
+  margin-top: 10px;
+  color: rgba(0, 0, 0, 0.62);
+  line-height: 1.45;
+}
+
+.cf-rec-ro__list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cf-rec-ro__item {
+  padding: 12px 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
+.cf-rec-ro__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.cf-rec-ro__name {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cf-rec-ro__badge {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(28, 110, 63, 0.08);
+  color: rgba(28, 110, 63, 0.95);
+  border: 1px solid rgba(28, 110, 63, 0.14);
+  flex: 0 0 auto;
+}
+
+.cf-rec-ro__meta {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.cf-rec-ro__audio {
+  width: 100%;
+  border-radius: 12px;
+}

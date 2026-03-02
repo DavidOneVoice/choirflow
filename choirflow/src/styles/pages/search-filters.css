@@ -1,0 +1,303 @@
+/* =========================
+   SearchFilters (scoped)
+   ========================= */
+
+.sf {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+  height: fit-content;
+}
+
+/* Header */
+.sf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sf-titleWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.sf-title {
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.sf-sub {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.sf-filterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  background: rgba(28, 110, 63, 0.06);
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  color: #1c6e3f;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.sf-filterBtn:active {
+  transform: scale(0.98);
+}
+
+.sf-badge {
+  margin-left: 2px;
+  background: #1c6e3f;
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 950;
+}
+
+/* Search Bar */
+.sf-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  box-shadow: 0 10px 25px rgba(10, 10, 10, 0.06);
+}
+
+.sf-searchIcon {
+  color: rgba(28, 110, 63, 0.75);
+  flex: 0 0 auto;
+}
+
+.sf-searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.sf-clearSearch {
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  background: rgba(28, 110, 63, 0.06);
+  color: #1c6e3f;
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* Filters Panel */
+.sf-panel {
+  margin-top: 12px;
+  background: #fff;
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: 0 18px 40px rgba(10, 10, 10, 0.08);
+}
+
+.sf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sf-span2 {
+  grid-column: span 2;
+}
+
+.sf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sf-label {
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.sf-select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  outline: none;
+  background: #fff;
+}
+
+.sf-select:focus {
+  border-color: rgba(28, 110, 63, 0.5);
+  box-shadow: 0 0 0 4px rgba(28, 110, 63, 0.1);
+}
+
+.sf-panelActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Summary */
+.sf-summary {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sf-pill {
+  align-self: flex-start;
+  background: rgba(28, 110, 63, 0.08);
+  border: 1px solid rgba(28, 110, 63, 0.14);
+  color: #1c6e3f;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.sf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sf-chip {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.78);
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.82rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sf-chip b {
+  margin-left: 6px;
+  opacity: 0.7;
+}
+
+/* List */
+.sf-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sf-empty {
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sf-item {
+  background: #fff;
+  border-radius: 18px;
+  padding: 12px;
+  border: 1px solid rgba(28, 110, 63, 0.1);
+  box-shadow: 0 10px 25px rgba(10, 10, 10, 0.06);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border 0.18s ease;
+}
+
+.sf-item:hover {
+  transform: translateY(-1px);
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  box-shadow: 0 18px 40px rgba(10, 10, 10, 0.1);
+}
+
+.sf-item.is-edit {
+  border: 1px solid rgba(28, 110, 63, 0.22);
+  box-shadow: 0 18px 40px rgba(28, 110, 63, 0.1);
+}
+
+.sf-view {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.sf-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sf-songTitle {
+  font-size: 1.02rem;
+  font-weight: 950;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sf-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.8rem;
+  background: rgba(28, 110, 63, 0.08);
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  color: #1c6e3f;
+}
+
+.sf-badgeSoft {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.sf-rowActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sf-editGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.sf-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sf-input {
+  margin-bottom: 0;
+}

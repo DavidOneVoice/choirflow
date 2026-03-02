@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import option1 from "./assets/option1.jpg";
 import SongItem from "./Components/SongItem";
-
+import "./styles/pages/home.css";
 import {
   collection,
   query,
@@ -93,100 +93,105 @@ export default function Home() {
   };
 
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <h1>All Songs</h1>
+    <div className="card home-card">
+      <div className="home-head">
+        <div>
+          <h1 className="home-title">All Songs</h1>
+          <p className="muted home-sub">
+            {sortedSongs.length} song{sortedSongs.length === 1 ? "" : "s"} saved
+          </p>
+        </div>
 
-      {/* SORT SELECTOR */}
-      <select
-        className="input"
-        style={{ marginBottom: 12 }}
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value)}
-      >
-        <option value="createdAt_desc">Newest First</option>
-        <option value="createdAt_asc">Oldest First</option>
-        <option value="title_asc">Title A–Z</option>
-        <option value="title_desc">Title Z–A</option>
-        <option value="key_asc">Key A–Z</option>
-        <option value="key_desc">Key Z–A</option>
-        <option value="tier_asc">Tier Low–High</option>
-        <option value="tier_desc">Tier High–Low</option>
-      </select>
+        <div className="home-sortWrap">
+          <select
+            className="input home-sort"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="createdAt_desc">Newest First</option>
+            <option value="createdAt_asc">Oldest First</option>
+            <option value="title_asc">Title A–Z</option>
+            <option value="title_desc">Title Z–A</option>
+            <option value="key_asc">Key A–Z</option>
+            <option value="key_desc">Key Z–A</option>
+            <option value="tier_asc">Tier Low–High</option>
+            <option value="tier_desc">Tier High–Low</option>
+          </select>
+        </div>
+      </div>
 
       {sortedSongs.length === 0 && (
-        <div style={{ textAlign: "center", padding: 20 }}>
-          <img src={option1} className="singers" alt="Image of singers" />
-          <p>No songs added yet.</p>
+        <div className="home-empty">
+          <img src={option1} className="home-emptyImg" alt="Image of singers" />
+          <p className="home-emptyTitle">No songs yet</p>
+          <p className="muted home-emptyText">
+            Add your first song and it will appear here.
+          </p>
         </div>
       )}
 
-      {sortedSongs.map((s) =>
-        editId === s.id ? (
-          /* ---------- EDIT MODE ---------- */
-          <div
-            key={s.id}
-            style={{
-              padding: "10px 0",
-              borderTop: "2px solid #eee",
-              marginBottom: 10,
-            }}
-          >
-            <input
-              className="input"
-              value={editData.title}
-              onChange={(e) =>
-                setEditData({ ...editData, title: e.target.value })
-              }
-              placeholder="Title"
-            />
+      <div className="home-list">
+        {sortedSongs.map((s) =>
+          editId === s.id ? (
+            <div key={s.id} className="home-editBlock">
+              <div className="home-editGrid">
+                <input
+                  className="input"
+                  value={editData.title}
+                  onChange={(e) =>
+                    setEditData({ ...editData, title: e.target.value })
+                  }
+                  placeholder="Title"
+                />
 
-            <input
-              className="input"
-              value={editData.key}
-              onChange={(e) =>
-                setEditData({ ...editData, key: e.target.value })
-              }
-              placeholder="Key"
-            />
+                <input
+                  className="input"
+                  value={editData.key}
+                  onChange={(e) =>
+                    setEditData({ ...editData, key: e.target.value })
+                  }
+                  placeholder="Key"
+                />
 
-            <input
-              className="input"
-              value={editData.category}
-              onChange={(e) =>
-                setEditData({ ...editData, category: e.target.value })
-              }
-              placeholder="Category"
-            />
+                <input
+                  className="input"
+                  value={editData.category}
+                  onChange={(e) =>
+                    setEditData({ ...editData, category: e.target.value })
+                  }
+                  placeholder="Category"
+                />
 
-            <input
-              className="input"
-              value={editData.tier}
-              onChange={(e) =>
-                setEditData({ ...editData, tier: e.target.value })
-              }
-              placeholder="Tier"
-            />
+                <input
+                  className="input"
+                  value={editData.tier}
+                  onChange={(e) =>
+                    setEditData({ ...editData, tier: e.target.value })
+                  }
+                  placeholder="Tier"
+                />
+              </div>
 
-            <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
-              <button className="btn primary" onClick={saveEdit}>
-                Save
-              </button>
-              <button className="btn" onClick={() => setEditId(null)}>
-                Cancel
-              </button>
+              <div className="home-editActions">
+                <button className="btn primary" onClick={saveEdit}>
+                  Save
+                </button>
+                <button className="btn" onClick={() => setEditId(null)}>
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          /* ---------- NORMAL VIEW (REUSABLE) ---------- */
-          <SongItem
-            key={s.id}
-            song={s}
-            onEdit={startEdit}
-            onDelete={removeSong}
-            showActions={true}
-          />
-        ),
-      )}
+          ) : (
+            <SongItem
+              key={s.id}
+              song={s}
+              onEdit={startEdit}
+              onDelete={removeSong}
+              showActions={true}
+            />
+          ),
+        )}
+      </div>
     </div>
   );
 }

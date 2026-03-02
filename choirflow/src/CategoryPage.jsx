@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
+import "./styles/pages/category-page.css";
 import {
   collection,
   query,
@@ -45,23 +46,31 @@ export default function CategoryPage({ category, onBack }) {
     return () => unsub();
   }, [category]);
 
+  const total = useMemo(() => songs.length, [songs]);
+
   /* ---------------- START EDIT ---------------- */
   const startEdit = (song) => {
     setEditId(song.id);
     setEditData({
-      title: song.title,
-      key: song.key,
-      category: song.category,
+      title: song.title || "",
+      key: song.key || "",
+      category: song.category || category || "",
       tier: song.tier || "",
     });
   };
 
   /* ---------------- SAVE EDIT ---------------- */
   const saveEdit = async () => {
+    if (!auth.currentUser) return;
+
     const ref = doc(db, "users", auth.currentUser.uid, "songs", editId);
 
     await updateDoc(ref, {
       ...editData,
+      title: (editData.title || "").trim(),
+      key: (editData.key || "").trim(),
+      category: (editData.category || "").trim(),
+      tier: (editData.tier || "").trim(),
     });
 
     setEditId(null);
@@ -70,127 +79,148 @@ export default function CategoryPage({ category, onBack }) {
   /* ---------------- DELETE SONG ---------------- */
   const removeSong = async (id) => {
     if (!window.confirm("Delete this song?")) return;
+    if (!auth.currentUser) return;
 
     const ref = doc(db, "users", auth.currentUser.uid, "songs", id);
-
     await deleteDoc(ref);
   };
 
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      {/* BACK BUTTON */}
-      <button
-        className="btn ghost"
-        style={{
-          marginBottom: 14,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}
-        onClick={onBack}
-      >
-        <ArrowBackIcon /> <span>Back</span>
-      </button>
+    <div className="card catpage">
+      {/* Header */}
+      <div className="catpage-head">
+        <button className="catpage-back" onClick={onBack}>
+          <ArrowBackIcon />
+          <span>Back</span>
+        </button>
 
-      <h1 style={{ marginBottom: 10 }}>{category}</h1>
+        <div className="catpage-meta">
+          <div className="catpage-titleRow">
+            <h1 className="catpage-title">{category}</h1>
+            <span className="catpage-pill">{total} songs</span>
+          </div>
+          <p className="catpage-sub muted">
+            Edit quickly, keep your library clean.
+          </p>
+        </div>
+      </div>
 
+      {/* Empty */}
       {songs.length === 0 && (
-        <p className="muted">No songs found in this category.</p>
+        <div className="catpage-empty">
+          <p className="muted">No songs found in this category.</p>
+        </div>
       )}
 
-      {songs.map((s) => (
-        <div
-          key={s.id}
-          style={{
-            padding: "10px 0",
-            borderTop: "2px solid #eee",
-            marginBottom: 10,
-          }}
-        >
-          {/* ---------- EDIT MODE ---------- */}
-          {editId === s.id ? (
-            <div>
-              <input
-                className="input"
-                value={editData.title}
-                onChange={(e) =>
-                  setEditData({ ...editData, title: e.target.value })
-                }
-                placeholder="Title"
-              />
+      {/* List */}
+      <div className="catpage-list">
+        {songs.map((s) => {
+          const isEditing = editId === s.id;
 
-              <input
-                className="input"
-                value={editData.key}
-                onChange={(e) =>
-                  setEditData({ ...editData, key: e.target.value })
-                }
-                placeholder="Key"
-              />
+          return (
+            <div
+              key={s.id}
+              className={`catpage-item ${isEditing ? "is-edit" : ""}`}
+            >
+              {isEditing ? (
+                <div className="catpage-edit">
+                  <div className="catpage-editGrid">
+                    <input
+                      className="input catpage-input"
+                      value={editData.title}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
+                      placeholder="Title"
+                    />
 
-              <input
-                className="input"
-                value={editData.category}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    category: e.target.value,
-                  })
-                }
-                placeholder="Category"
-              />
+                    <input
+                      className="input catpage-input"
+                      value={editData.key}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          key: e.target.value,
+                        }))
+                      }
+                      placeholder="Key (e.g. F#)"
+                    />
 
-              <input
-                className="input"
-                value={editData.tier}
-                onChange={(e) =>
-                  setEditData({ ...editData, tier: e.target.value })
-                }
-                placeholder="Tier"
-              />
+                    <input
+                      className="input catpage-input"
+                      value={editData.category}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                        }))
+                      }
+                      placeholder="Category"
+                    />
 
-              <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
-                <button className="btn primary" onClick={saveEdit}>
-                  Save
-                </button>
-                <button className="btn" onClick={() => setEditId(null)}>
-                  Cancel
-                </button>
-              </div>
+                    <input
+                      className="input catpage-input"
+                      value={editData.tier}
+                      onChange={(e) =>
+                        setEditData((prev) => ({
+                          ...prev,
+                          tier: e.target.value,
+                        }))
+                      }
+                      placeholder="Tier (optional)"
+                    />
+                  </div>
+
+                  <div className="catpage-actions">
+                    <button className="btn primary" onClick={saveEdit}>
+                      Save
+                    </button>
+                    <button className="btn" onClick={() => setEditId(null)}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="catpage-view">
+                  <div className="catpage-main">
+                    <h3 className="catpage-songTitle">{s.title}</h3>
+
+                    <div className="catpage-badges">
+                      {s.key ? (
+                        <span className="catpage-badge">Key: {s.key}</span>
+                      ) : null}
+                      {s.tier ? (
+                        <span className="catpage-badge">Tier {s.tier}</span>
+                      ) : null}
+                    </div>
+
+                    <p className="catpage-mini muted">
+                      {s.category || category}
+                    </p>
+                  </div>
+
+                  <div className="catpage-actionsRow">
+                    <button className="btn small" onClick={() => startEdit(s)}>
+                      Edit
+                    </button>
+                    <button
+                      className="btn small danger"
+                      onClick={() => removeSong(s.id)}
+                      aria-label="Delete song"
+                      title="Delete"
+                    >
+                      <DeleteIcon />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : (
-            /* ---------- NORMAL VIEW ---------- */
-            <div>
-              <h3>{s.title}</h3>
-              <p className="muted" style={{ fontSize: ".9rem" }}>
-                Key: {s.key}
-                {s.tier && <> • Tier {s.tier}</>}
-                <br />
-                {s.category}
-              </p>
-
-              <div
-                style={{
-                  marginTop: 6,
-                  display: "flex",
-                  gap: 10,
-                }}
-              >
-                <button className="btn small" onClick={() => startEdit(s)}>
-                  Edit
-                </button>
-
-                <button
-                  className="btn small danger"
-                  onClick={() => removeSong(s.id)}
-                >
-                  <DeleteIcon />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
+          );
+        })}
+      </div>
     </div>
   );
 }

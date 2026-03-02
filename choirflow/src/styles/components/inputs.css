@@ -1,0 +1,17 @@
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.9);
+  outline: none;
+  margin-bottom: 12px;
+  transition:
+    box-shadow var(--t-fast) var(--ease),
+    border var(--t-fast) var(--ease);
+}
+
+.input:focus {
+  border-color: rgba(28, 110, 63, 0.45);
+  box-shadow: 0 0 0 4px rgba(28, 110, 63, 0.12);
+}

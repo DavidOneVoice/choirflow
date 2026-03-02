@@ -1,27 +1,27 @@
 /* =========================
-   ChoirFlo Recordings Panel
-   Scoped: .cf-rec only
+   ChoirFlow Recordings Editor
+   Scoped: .cf-recEd only
    ========================= */
 
-.cf-rec {
+.cf-recEd {
   width: 100%;
   margin-top: 10px;
 }
 
-.cf-rec__top {
+.cf-recEd__top {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   gap: 10px;
   align-items: center;
 }
 
 /* Hide native input */
-.cf-rec__fileInput {
+.cf-recEd__fileInput {
   display: none;
 }
 
 /* File button */
-.cf-rec__fileBtn {
+.cf-recEd__fileBtn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,101 +33,62 @@
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.08);
 
+  /* blends well with your green/white brand */
   background: linear-gradient(
     135deg,
-    rgba(63, 61, 255, 0.12),
-    rgba(0, 194, 168, 0.1)
+    rgba(28, 110, 63, 0.12),
+    rgba(255, 255, 255, 0.65)
   );
+
   color: #111;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.95rem;
 
   cursor: pointer;
   user-select: none;
 
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
-    border-color 180ms ease;
+    border-color 180ms ease,
+    filter 180ms ease;
 }
 
-.cf-rec__fileBtn:hover {
+.cf-recEd__fileBtn:hover {
   transform: translateY(-1px);
-  border-color: rgba(63, 61, 255, 0.25);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
+  border-color: rgba(28, 110, 63, 0.24);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+  filter: saturate(1.05);
 }
 
-.cf-rec__fileBtn:active {
+.cf-recEd__fileBtn:active {
   transform: scale(0.99);
 }
 
-.cf-rec__fileIcon {
+.cf-recEd__fileIcon {
   font-size: 1.05rem;
 }
 
-/* Mic button */
-.cf-rec__micBtn {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
-
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
-  cursor: pointer;
-
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-
-.cf-rec__micBtn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(0, 0, 0, 0.14);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
-}
-
-.cf-rec__micBtn:active {
-  transform: scale(0.98);
-}
-
-/* Stop state */
-.cf-rec__micBtn--stop {
-  border-color: rgba(220, 20, 60, 0.25);
-  background: rgba(220, 20, 60, 0.06);
-}
-
-.cf-rec__error {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-
-  background: rgba(220, 20, 60, 0.08);
-  border: 1px solid rgba(220, 20, 60, 0.18);
-  color: crimson;
-  font-size: 0.95rem;
-}
-
 /* Sections spacing */
-.cf-rec__section {
+.cf-recEd__section {
   margin-top: 14px;
 }
 
-/* Optional: make audio tags look nicer inside this panel only */
-.cf-rec audio {
+/* Optional: make audio tags look nicer inside this editor only */
+.cf-recEd audio {
+  width: 100%;
   border-radius: 12px;
   overflow: hidden;
 }
-/* ===== UploadProgress (scoped) ===== */
-.cf-rec__up {
-  margin-top: 14px;
+
+/* =========================
+   UploadProgress (scoped)
+   We style UploadProgress' internal classes only when it's inside .cf-recEd
+   ========================= */
+
+.cf-recEd .cf-rec__up {
+  margin-top: 0;
   padding: 12px;
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -135,7 +96,7 @@
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
 }
 
-.cf-rec__upHeader {
+.cf-recEd .cf-rec__upHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -143,17 +104,18 @@
   margin-bottom: 10px;
 }
 
-.cf-rec__upTitle {
+.cf-recEd .cf-rec__upTitle {
   margin: 0;
   font-size: 0.95rem;
+  font-weight: 900;
 }
 
-.cf-rec__upClearBtn {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+.cf-recEd .cf-rec__upClearBtn {
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
   padding: 8px 10px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
   transition:
@@ -161,45 +123,45 @@
     box-shadow 180ms ease;
 }
 
-.cf-rec__upClearBtn:hover {
+.cf-recEd .cf-rec__upClearBtn:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
 }
 
-.cf-rec__upList {
+.cf-recEd .cf-rec__upList {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.cf-rec__upItem {
+.cf-recEd .cf-rec__upItem {
   padding-top: 10px;
   border-top: 1px dashed rgba(0, 0, 0, 0.12);
 }
 
-.cf-rec__upRow {
+.cf-recEd .cf-rec__upRow {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   align-items: center;
 }
 
-.cf-rec__upName {
-  font-weight: 700;
+.cf-recEd .cf-rec__upName {
+  font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cf-rec__upPct {
+.cf-recEd .cf-rec__upPct {
   min-width: 70px;
   text-align: right;
-  font-weight: 700;
+  font-weight: 900;
   opacity: 0.7;
   font-size: 0.9rem;
 }
 
-.cf-rec__bar {
+.cf-recEd .cf-rec__bar {
   height: 8px;
   background: rgba(0, 0, 0, 0.08);
   border-radius: 999px;
@@ -207,95 +169,108 @@
   margin-top: 8px;
 }
 
-.cf-rec__barFill {
+.cf-recEd .cf-rec__barFill {
   height: 100%;
   width: 0%;
   background: linear-gradient(
     90deg,
-    rgba(63, 61, 255, 0.9),
-    rgba(0, 194, 168, 0.9)
+    rgba(28, 110, 63, 0.95),
+    rgba(28, 110, 63, 0.55)
   );
   transition: width 220ms ease;
 }
 
-.cf-rec__barFill--err {
+.cf-recEd .cf-rec__barFill--err {
   background: rgba(231, 76, 60, 0.95);
 }
 
-.cf-rec__upErr {
+.cf-recEd .cf-rec__upErr {
   margin-top: 8px;
   color: #e74c3c;
-  font-weight: 600;
+  font-weight: 800;
   font-size: 0.9rem;
 }
 
-/* ===== RecordingList (scoped) ===== */
-.cf-rec__empty {
+/* =========================
+   RecordingList (scoped)
+   (We keep RecordingList’s own .cf-rec__* classes,
+    but only style them when inside .cf-recEd)
+   ========================= */
+
+.cf-recEd .cf-rec__empty {
   margin-top: 10px;
-  opacity: 0.7;
+  opacity: 0.75;
   font-size: 0.95rem;
 }
 
-.cf-rec__list {
+.cf-recEd .cf-rec__list {
   margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.cf-rec__item {
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+.cf-recEd .cf-rec__item {
+  padding: 12px 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
 }
 
-.cf-rec__itemTop {
+.cf-recEd .cf-rec__itemTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  margin-bottom: 6px;
 }
 
-.cf-rec__name {
-  margin: 0 0 6px 0;
+.cf-recEd .cf-rec__name {
+  margin: 0;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.cf-rec__meta {
+.cf-recEd .cf-rec__meta {
   margin: 0 0 10px 0;
   font-size: 0.9rem;
   opacity: 0.7;
 }
 
-.cf-rec__audio {
+.cf-recEd .cf-rec__audio {
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
 }
 
-/* Small button system just for this panel */
-.cf-rec__btn {
+.cf-recEd .cf-rec__btn {
   border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 12px;
   padding: 10px 12px;
-  font-weight: 700;
+  font-weight: 900;
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
   transition:
     transform 180ms ease,
-    box-shadow 180ms ease;
+    box-shadow 180ms ease,
+    border-color 180ms ease;
 }
 
-.cf-rec__btn:hover {
+.cf-recEd .cf-rec__btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
 }
 
-.cf-rec__btn--primary {
-  border-color: rgba(63, 61, 255, 0.25);
-  background: rgba(63, 61, 255, 0.1);
+.cf-recEd .cf-rec__btn--primary {
+  border-color: rgba(28, 110, 63, 0.25);
+  background: rgba(28, 110, 63, 0.1);
 }
 
-.cf-rec__btn--danger {
+.cf-recEd .cf-rec__btn--danger {
   border-color: rgba(231, 76, 60, 0.25);
   background: rgba(231, 76, 60, 0.08);
   color: #c0392b;
@@ -303,12 +278,11 @@
   width: 100%;
 }
 
-.cf-rec__btn--ghost {
+.cf-recEd .cf-rec__btn--ghost {
   padding: 8px 10px;
 }
 
-/* Rename area */
-.cf-rec__renameInput {
+.cf-recEd .cf-rec__renameInput {
   width: 100%;
   padding: 12px 12px;
   border-radius: 12px;
@@ -316,7 +290,11 @@
   outline: none;
 }
 
-.cf-rec__renameActions {
+.cf-recEd .cf-rec__renameInput:focus {
+  border-color: rgba(28, 110, 63, 0.35);
+}
+
+.cf-recEd .cf-rec__renameActions {
   display: flex;
   gap: 10px;
   margin-top: 10px;

@@ -1,0 +1,195 @@
+/* Page-scoped: LineUpDetails only */
+
+.lineup-details {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.92),
+    rgba(255, 255, 255, 0.86)
+  );
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  box-shadow: 0 20px 55px rgba(10, 10, 10, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+/* Header */
+.lineup-details__header {
+  position: relative;
+  padding: 6px 0 10px;
+  margin-bottom: 10px;
+}
+
+.lineup-details__title {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  color: #0f1a12;
+  line-height: 1.15;
+}
+
+.lineup-details__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lineup-details__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(28, 110, 63, 0.08);
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.lineup-details__counts {
+  font-size: 0.92rem;
+}
+
+/* Sections */
+.lineup-details__section {
+  margin-top: 14px;
+}
+
+.lineup-details__sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.lineup-details__sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  color: #142017;
+}
+
+.lineup-details__badge {
+  min-width: 34px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Song list */
+.lineup-details__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lineup-details__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 24px rgba(10, 10, 10, 0.05);
+  transition:
+    transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.lineup-details__row:active {
+  transform: scale(0.99);
+}
+
+.lineup-details__index {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 950;
+  color: var(--brand);
+  background: rgba(28, 110, 63, 0.08);
+  border: 1px solid rgba(28, 110, 63, 0.14);
+  flex: 0 0 auto;
+}
+
+.lineup-details__text {
+  font-weight: 800;
+  color: #0f1a12;
+  line-height: 1.25;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Recordings wrapper (lets RecordingListReadOnly breathe) */
+.lineup-details__recordings {
+  padding: 10px 0 0;
+}
+
+/* Footer actions */
+.lineup-details__footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lineup-details__primaryBtn {
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-radius: 16px;
+}
+
+.lineup-details__actionsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.lineup-details__iconBtn {
+  flex: 1;
+  height: 48px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make delete “danger-ish” while keeping ghost base */
+.lineup-details__deleteBtn {
+  border-color: rgba(225, 29, 72, 0.22);
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.06);
+}
+
+/* Small polish on very small screens */
+@media (max-width: 360px) {
+  .lineup-details {
+    padding: 12px;
+    border-radius: 16px;
+  }
+  .lineup-details__title {
+    font-size: 1.25rem;
+  }
+}

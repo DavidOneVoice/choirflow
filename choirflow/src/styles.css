@@ -1,9 +1,3 @@
-/* ---------------------------------------------------
-   ChoirFlow – Mobile-first Vanilla CSS
-   Theme: Forest Gold Elegance
-   --------------------------------------------------- */
-
-/* RESET */
 * {
   margin: 0;
   padding: 0;
@@ -42,11 +36,6 @@ body,
   color: #111;
   overflow: hidden; /* prevent page scroll, only main scrolls */
 }
-
-/* ---------------------------------------------------
-   SPLASH SCREEN
---------------------------------------------------- */
-
 .splash-root {
   display: flex;
   justify-content: center;
@@ -67,10 +56,6 @@ body,
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
   margin-bottom: 12px;
 }
-
-/* ---------------------------------------------------
-   TOPBAR
---------------------------------------------------- */
 
 .topbar {
   height: 56px;
@@ -97,18 +82,16 @@ body,
   border-radius: 10px;
   object-fit: cover;
 }
-
-/* ---------------------------------------------------
-   MAIN SCREEN
---------------------------------------------------- */
-
+/* MAIN SCREEN */
 .screen-center {
   flex: 1;
   display: flex;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   justify-content: center;
   padding: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 /* CARD */
@@ -156,7 +139,6 @@ body,
 }
 
 .btn.primary {
-  min-width: 120px;
   background: #1c6e3f;
   color: #fff;
 }
@@ -344,4 +326,8 @@ body,
   .card {
     border-radius: 16px;
   }
+}
+.topbar,
+.bottom-nav {
+  flex: 0 0 auto;
 }

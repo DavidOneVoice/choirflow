@@ -11,7 +11,11 @@ export default function UploadProgress({
       <div className="cf-rec__upHeader">
         <h4 className="cf-rec__upTitle">Upload Progress</h4>
 
-        <button className="cf-rec__upClearBtn" onClick={onClearCompleted}>
+        <button
+          type="button"
+          className="cf-rec__upClearBtn"
+          onClick={onClearCompleted}
+        >
           Clear Completed
         </button>
       </div>

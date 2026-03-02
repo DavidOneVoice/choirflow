@@ -1,9 +1,16 @@
-import React, { useEffect, useState } from "react";
+// EditLineUp.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import PianoIcon from "@mui/icons-material/Piano";
+import CloseIcon from "@mui/icons-material/Close";
 import { db, auth } from "./firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import RecordingsEditor from "./Components/lineup/RecordingsEditor";
+import MiniKeyboard from "./Components/music/MiniKeyboard";
+
+import "./styles/pages/lineup-edit.css";
 
 export default function EditLineUp({ id, onBack }) {
   const [loading, setLoading] = useState(true);
@@ -20,20 +27,12 @@ export default function EditLineUp({ id, onBack }) {
   const [dragWorshipIndex, setDragWorshipIndex] = useState(null);
   const [dragPraiseIndex, setDragPraiseIndex] = useState(null);
 
-  const keysList = [
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "B",
-  ];
+  const [showKb, setShowKb] = useState(false);
+
+  const keysList = useMemo(
+    () => ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"],
+    [],
+  );
 
   const moveItem = (list, from, to) => {
     const next = [...list];
@@ -42,7 +41,6 @@ export default function EditLineUp({ id, onBack }) {
     return next;
   };
 
-  /* ---------------- FETCH LINE-UP ---------------- */
   useEffect(() => {
     if (!auth.currentUser || !id) return;
 
@@ -64,7 +62,6 @@ export default function EditLineUp({ id, onBack }) {
     load();
   }, [id]);
 
-  /* ---------------- ADD SONGS ---------------- */
   const addWorship = () => {
     const v = worshipInput.trim();
     if (!v) return;
@@ -79,7 +76,6 @@ export default function EditLineUp({ id, onBack }) {
     setPraiseInput("");
   };
 
-  /* ---------------- EDIT SONG TEXT ---------------- */
   const updateWorshipText = (idx, value) => {
     setWorshipList((prev) => {
       const next = [...prev];
@@ -96,7 +92,6 @@ export default function EditLineUp({ id, onBack }) {
     });
   };
 
-  /* ---------------- REMOVE SONG (WITH CONFIRM) ---------------- */
   const removeWorship = (idx) => {
     if (!window.confirm("Remove this worship song?")) return;
     setWorshipList((prev) => prev.filter((_, i) => i !== idx));
@@ -107,7 +102,6 @@ export default function EditLineUp({ id, onBack }) {
     setPraiseList((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  /* ---------------- SAVE ---------------- */
   const handleUpdate = async () => {
     if (!keySel) return alert("Please select a key");
 
@@ -124,167 +118,265 @@ export default function EditLineUp({ id, onBack }) {
 
   if (loading) {
     return (
-      <div className="card">
+      <div className="card lineup-edit">
         <p className="muted">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
+    <div className="card lineup-edit">
       <button
-        className="btn small"
+        className="btn small lineup-edit__back"
         onClick={onBack}
-        style={{ marginBottom: 10, display: "flex", gap: 4 }}
+        aria-label="Back"
+        type="button"
       >
         <ArrowBackIcon />
       </button>
 
-      <h1>Edit Line-Up</h1>
+      <div className="lineup-edit__header">
+        <h1 className="lineup-edit__title">Edit Line-Up</h1>
+        <p className="muted lineup-edit__sub">
+          Drag to reorder. Changes save to this line-up.
+        </p>
+      </div>
 
-      <input
-        className="input"
-        placeholder="Line-Up Title (optional)"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      {/* Title */}
+      <section className="lineup-edit__section">
+        <label className="lineup-edit__label">Title (optional)</label>
+        <input
+          className="input lineup-edit__input"
+          placeholder="e.g. Covenant Night — Worship Set"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </section>
 
-      <select
-        className="input"
-        value={keySel}
-        onChange={(e) => setKeySel(e.target.value)}
-        style={{ marginTop: 10 }}
-      >
-        <option value="">Select Key</option>
-        {keysList.map((k) => (
-          <option key={k} value={k}>
-            {k} Major
-          </option>
-        ))}
-      </select>
+      {/* Key */}
+      <section className="lineup-edit__section">
+        <div className="lineup-edit__row">
+          <label className="lineup-edit__label">Key</label>
+
+          <button
+            type="button"
+            className="btn small lineup-edit__kbdBtn"
+            onClick={() => setShowKb(true)}
+          >
+            <PianoIcon className="lineup-edit__kbdIcon" />
+            <span>Keyboard</span>
+          </button>
+        </div>
+
+        <select
+          className="input lineup-edit__select"
+          value={keySel}
+          onChange={(e) => setKeySel(e.target.value)}
+        >
+          <option value="">Select Key</option>
+          {keysList.map((k) => (
+            <option key={k} value={k}>
+              {k} Major
+            </option>
+          ))}
+        </select>
+
+        {keySel && (
+          <div className="lineup-edit__chip">
+            <span className="lineup-edit__chipMuted">Selected:</span>
+            <b>{keySel} Major</b>
+          </div>
+        )}
+      </section>
 
       {/* WORSHIP */}
-      <h3 style={{ marginTop: 20 }}>Worship Songs</h3>
+      <section className="lineup-edit__section">
+        <div className="lineup-edit__row">
+          <h3 className="lineup-edit__h3">Worship Songs</h3>
+          <span className="muted lineup-edit__count">{worshipList.length}</span>
+        </div>
 
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        <input
-          className="input"
-          placeholder="Add worship song..."
-          value={worshipInput}
-          onChange={(e) => setWorshipInput(e.target.value)}
-        />
-        <AddCircleIcon style={{ cursor: "pointer" }} onClick={addWorship} />
-      </div>
-
-      {worshipList.map((w, i) => (
-        <div
-          key={`${w}-${i}`}
-          draggable
-          onDragStart={() => setDragWorshipIndex(i)}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={() => {
-            if (dragWorshipIndex === null || dragWorshipIndex === i) return;
-            setWorshipList((prev) => moveItem(prev, dragWorshipIndex, i));
-            setDragWorshipIndex(null);
-          }}
-          style={{
-            display: "flex",
-            gap: 6,
-            marginTop: 6,
-            alignItems: "center",
-          }}
-        >
-          <span
-            title="Drag to reorder"
-            style={{
-              cursor: "grab",
-              userSelect: "none",
-              padding: "0 6px",
-              fontWeight: 700,
-              opacity: 0.7,
-            }}
-          >
-            ☰
-          </span>
-
+        <div className="lineup-edit__adder">
           <input
-            className="input"
-            value={w}
-            onChange={(e) => updateWorshipText(i, e.target.value)}
+            className="input lineup-edit__input"
+            placeholder="Add worship song..."
+            value={worshipInput}
+            onChange={(e) => setWorshipInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") addWorship();
+            }}
           />
 
-          <button className="btn small danger" onClick={() => removeWorship(i)}>
-            <DeleteIcon />
+          <button
+            type="button"
+            className="btn small primary lineup-edit__addBtn"
+            onClick={addWorship}
+          >
+            <AddCircleIcon />
           </button>
         </div>
-      ))}
+
+        <div className="lineup-edit__list">
+          {worshipList.map((w, i) => (
+            <div
+              key={`${w}-${i}`}
+              className="lineup-edit__item"
+              draggable
+              onDragStart={() => setDragWorshipIndex(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (dragWorshipIndex === null || dragWorshipIndex === i) return;
+                setWorshipList((prev) => moveItem(prev, dragWorshipIndex, i));
+                setDragWorshipIndex(null);
+              }}
+            >
+              <span className="lineup-edit__grab" title="Drag to reorder">
+                ☰
+              </span>
+
+              <input
+                className="input lineup-edit__itemInput"
+                value={w}
+                onChange={(e) => updateWorshipText(i, e.target.value)}
+              />
+
+              <button
+                type="button"
+                className="btn small danger lineup-edit__delBtn"
+                onClick={() => removeWorship(i)}
+                aria-label="Delete worship song"
+                title="Remove"
+              >
+                <DeleteIcon />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* PRAISE */}
-      <h3 style={{ marginTop: 20 }}>Praise Songs</h3>
+      <section className="lineup-edit__section">
+        <div className="lineup-edit__row">
+          <h3 className="lineup-edit__h3">Praise Songs</h3>
+          <span className="muted lineup-edit__count">{praiseList.length}</span>
+        </div>
 
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        <input
-          className="input"
-          placeholder="Add praise song..."
-          value={praiseInput}
-          onChange={(e) => setPraiseInput(e.target.value)}
-        />
-        <AddCircleIcon style={{ cursor: "pointer" }} onClick={addPraise} />
-      </div>
-
-      {praiseList.map((p, i) => (
-        <div
-          key={`${p}-${i}`}
-          draggable
-          onDragStart={() => setDragPraiseIndex(i)}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={() => {
-            if (dragPraiseIndex === null || dragPraiseIndex === i) return;
-            setPraiseList((prev) => moveItem(prev, dragPraiseIndex, i));
-            setDragPraiseIndex(null);
-          }}
-          style={{
-            display: "flex",
-            gap: 6,
-            marginTop: 6,
-            alignItems: "center",
-          }}
-        >
-          <span
-            title="Drag to reorder"
-            style={{
-              cursor: "grab",
-              userSelect: "none",
-              padding: "0 6px",
-              fontWeight: 700,
-              opacity: 0.7,
-            }}
-          >
-            ☰
-          </span>
-
+        <div className="lineup-edit__adder">
           <input
-            className="input"
-            value={p}
-            onChange={(e) => updatePraiseText(i, e.target.value)}
+            className="input lineup-edit__input"
+            placeholder="Add praise song..."
+            value={praiseInput}
+            onChange={(e) => setPraiseInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") addPraise();
+            }}
           />
 
-          <button className="btn small danger" onClick={() => removePraise(i)}>
-            <DeleteIcon />
+          <button
+            type="button"
+            className="btn small primary lineup-edit__addBtn"
+            onClick={addPraise}
+          >
+            <AddCircleIcon />
           </button>
         </div>
-      ))}
 
-      <h3 style={{ marginTop: 24 }}>Rehearsal Recordings</h3>
-      <RecordingsEditor lineupId={id} />
+        <div className="lineup-edit__list">
+          {praiseList.map((p, i) => (
+            <div
+              key={`${p}-${i}`}
+              className="lineup-edit__item"
+              draggable
+              onDragStart={() => setDragPraiseIndex(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (dragPraiseIndex === null || dragPraiseIndex === i) return;
+                setPraiseList((prev) => moveItem(prev, dragPraiseIndex, i));
+                setDragPraiseIndex(null);
+              }}
+            >
+              <span className="lineup-edit__grab" title="Drag to reorder">
+                ☰
+              </span>
+
+              <input
+                className="input lineup-edit__itemInput"
+                value={p}
+                onChange={(e) => updatePraiseText(i, e.target.value)}
+              />
+
+              <button
+                type="button"
+                className="btn small danger lineup-edit__delBtn"
+                onClick={() => removePraise(i)}
+                aria-label="Delete praise song"
+                title="Remove"
+              >
+                <DeleteIcon />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* RECORDINGS */}
+      <section className="lineup-edit__section">
+        <div className="lineup-edit__row">
+          <h3 className="lineup-edit__h3">Rehearsal Recordings</h3>
+          <span className="muted lineup-edit__hint">Upload audio files</span>
+        </div>
+        <div className="lineup-edit__recordings">
+          <RecordingsEditor lineupId={id} />
+        </div>
+      </section>
 
       <button
-        className="btn primary"
-        style={{ marginTop: 20, marginBottom: 10 }}
+        className="btn primary lineup-edit__save"
+        type="button"
         onClick={handleUpdate}
       >
         Save Changes
       </button>
+
+      {/* Keyboard Modal */}
+      {showKb && (
+        <div
+          className="lineup-edit__modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowKb(false)}
+        >
+          <div
+            className="lineup-edit__modalSheet"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lineup-edit__modalTop">
+              <div>
+                <h3 className="lineup-edit__modalTitle">Keyboard</h3>
+                <p className="muted lineup-edit__modalSub">
+                  Tap a note to hear it and set the key.
+                </p>
+              </div>
+
+              <button
+                className="btn small lineup-edit__close"
+                onClick={() => setShowKb(false)}
+                type="button"
+                aria-label="Close keyboard"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <MiniKeyboard
+              onPick={(note) => {
+                setKeySel(note);
+                setShowKb(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

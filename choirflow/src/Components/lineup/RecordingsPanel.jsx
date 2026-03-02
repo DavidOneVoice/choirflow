@@ -1,3 +1,4 @@
+import "./RecordingsPanel.css";
 import UploadProgress from "./UploadProgress";
 import RecordingList from "./RecordingList";
 
@@ -6,53 +7,43 @@ export default function RecordingsPanel({
   uploadProgress,
   onPickFiles,
   onClearCompleted,
-  recording,
-  recordError,
-  onStartRecording,
-  onStopRecording,
   recordings,
   onDeleteRecording,
   onRenameRecording,
 }) {
   return (
-    <div style={{ marginTop: 20 }}>
-      <h3 style={{ marginTop: 10 }}>Rehearsal Recordings</h3>
+    <section className="cf-rec-panel">
+      <div className="cf-rec-panel__head">
+        <h3 className="cf-rec-panel__title">Rehearsal Recordings</h3>
+        <p className="cf-rec-panel__sub">
+          Upload audio files for rehearsal or intro.
+        </p>
+      </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          marginTop: 10,
-        }}
-      >
-        <input type="file" accept="audio/*" multiple onChange={onPickFiles} />
-        <button className="btn primary" disabled={uploading}>
+      <div className="cf-rec-panel__uploader">
+        <label className="cf-rec-panel__fileBtn">
+          <input
+            className="cf-rec-panel__fileInput"
+            type="file"
+            accept="audio/*"
+            multiple
+            onChange={onPickFiles}
+          />
+          Select Audio Files
+        </label>
+
+        <button
+          className="btn primary cf-rec-panel__uploadBtn"
+          disabled={uploading}
+        >
           {uploading ? "Uploading..." : "Upload"}
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-        {!recording ? (
-          <button className="btn primary" onClick={onStartRecording}>
-            Record Voice Note
-          </button>
-        ) : (
-          <button className="btn danger" onClick={onStopRecording}>
-            Stop Recording
-          </button>
-        )}
-      </div>
-
-      {recordError && (
-        <p className="muted" style={{ color: "crimson", marginTop: 8 }}>
-          {recordError}
-        </p>
-      )}
-
       <UploadProgress
         uploadProgress={uploadProgress}
         onClearCompleted={onClearCompleted}
+        className="cf-rec-panel__progress"
       />
 
       <RecordingList
@@ -60,6 +51,6 @@ export default function RecordingsPanel({
         onDelete={onDeleteRecording}
         onRename={onRenameRecording}
       />
-    </div>
+    </section>
   );
 }

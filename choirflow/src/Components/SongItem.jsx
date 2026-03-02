@@ -1,4 +1,5 @@
 import DeleteIcon from "@mui/icons-material/Delete";
+import "../styles/components/song-item.css";
 
 export default function SongItem({
   song,
@@ -7,33 +8,36 @@ export default function SongItem({
   showActions = true,
 }) {
   return (
-    <div
-      style={{
-        padding: "10px 0",
-        borderTop: "2px solid #eee",
-        marginBottom: 10,
-      }}
-    >
-      <h3>{song.title}</h3>
+    <div className="cf-songItem">
+      <div className="cf-songItem__main">
+        <div className="cf-songItem__text">
+          <h3 className="cf-songItem__title">{song.title}</h3>
 
-      <p className="muted" style={{ fontSize: ".9rem" }}>
-        Key: {song.key}
-        {song.tier && <> • Tier {song.tier}</>}
-        <br />
-        {song.category}
-      </p>
+          <p className="cf-songItem__meta">
+            <span className="cf-songItem__key">{song.key}</span>
+            {song.tier && (
+              <span className="cf-songItem__tier">Tier {song.tier}</span>
+            )}
+          </p>
+
+          <p className="cf-songItem__category">{song.category}</p>
+        </div>
+      </div>
 
       {showActions && (
-        <div style={{ marginTop: 6, display: "flex", gap: 10 }}>
-          <button className="btn small" onClick={() => onEdit(song)}>
+        <div className="cf-songItem__actions">
+          <button
+            className="btn small cf-songItem__editBtn"
+            onClick={() => onEdit(song)}
+          >
             Edit
           </button>
 
           <button
-            className="btn small danger"
+            className="btn small danger cf-songItem__delBtn"
             onClick={() => onDelete(song.id)}
           >
-            <DeleteIcon />
+            <DeleteIcon fontSize="small" />
           </button>
         </div>
       )}

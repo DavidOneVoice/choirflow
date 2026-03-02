@@ -14,6 +14,14 @@ import LineUpDetails from "./Components/lineup/LineUpDetails.jsx";
 import EditLineUp from "./EditLineUp.jsx";
 import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/layout.css";
+import "./styles/components/cards.css";
+import "./styles/components/inputs.css";
+import "./styles/components/buttons.css";
+import "./styles/components/nav.css";
+import "./styles/pages/app.css";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -73,12 +81,15 @@ export default function App() {
   return (
     <div className="app-root">
       {/* Top Bar */}
-      <header className="topbar">
+      <header className="topbar app-topbar">
         <div className="brand">
           <img src={logo} className="topbar-logo" alt="ChoirFlow Logo" />
         </div>
 
-        <button className="nav-btn" onClick={() => setTab("search")}>
+        <button
+          className="nav-btn app-topbar__iconBtn"
+          onClick={() => setTab("search")}
+        >
           <FilterListIcon style={{ fontSize: 40 }} />
         </button>
       </header>
@@ -147,89 +158,58 @@ export default function App() {
           // SEARCH
           if (tab === "search") return <SearchFilters />;
 
-          // PROFILE
           if (tab === "profile")
             return (
-              <div className="card" style={{ marginTop: 80 }}>
+              <div className="card app-profile">
                 <h1>Profile</h1>
-                <h4 className="muted" style={{ marginBottom: 40 }}>
+
+                <h4 className="muted app-profile__username">
                   Username:{" "}
                   {user.displayName ||
                     localStorage.getItem("choirflow_username") ||
                     "One Voice"}
                 </h4>
 
-                <button
-                  className="btn primary"
-                  style={{
-                    width: "100%",
-                    marginBottom: 14,
-                    paddingTop: 30,
-                    paddingBottom: 30,
-                    backgroundColor: "#fff",
-                    color: "#000",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  }}
-                  onClick={() => setTab("lineups")}
-                >
-                  Create Line-Up
-                </button>
+                <div className="app-profile__actions">
+                  <button
+                    className="app-profile__actionBtn"
+                    onClick={() => setTab("lineups")}
+                  >
+                    <span>Create Line-Up</span>
+                    <span className="app-profile__pill">New</span>
+                  </button>
 
-                <button
-                  className="btn primary"
-                  style={{
-                    width: "100%",
-                    paddingTop: 30,
-                    paddingBottom: 30,
-                    backgroundColor: "#fff",
-                    color: "#000",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  }}
-                  onClick={() => setTab("lineupsList")}
-                >
-                  View Saved Line-Ups
-                </button>
+                  <button
+                    className="app-profile__actionBtn"
+                    onClick={() => setTab("lineupsList")}
+                  >
+                    <span>View Saved Line-Ups</span>
+                    <span className="app-profile__pill">List</span>
+                  </button>
 
-                <button
-                  className="btn primary"
-                  style={{
-                    width: "100%",
-                    marginTop: 14,
-                    marginBottom: 14,
-                    paddingTop: 30,
-                    paddingBottom: 30,
-                    backgroundColor: "#fff",
-                    color: "#000",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  }}
-                  onClick={() =>
-                    window.open(
-                      "https://badrudavidportfolio.netlify.app/#contact",
-                      "_blank",
-                    )
-                  }
-                >
-                  Contact Support Centre
-                </button>
+                  <button
+                    className="app-profile__actionBtn"
+                    onClick={() =>
+                      window.open(
+                        "https://badrudavidportfolio.netlify.app/#contact",
+                        "_blank",
+                      )
+                    }
+                  >
+                    <span>Contact Support Centre</span>
+                    <span className="app-profile__pill">Help</span>
+                  </button>
 
-                <button
-                  className="btn primary"
-                  style={{
-                    width: "100%",
-                    paddingTop: 30,
-                    paddingBottom: 30,
-                    backgroundColor: "#fff",
-                    color: "#000",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  }}
-                  onClick={async () => await auth.signOut()}
-                >
-                  Sign Out
-                </button>
+                  <button
+                    className="app-profile__actionBtn"
+                    onClick={async () => await auth.signOut()}
+                  >
+                    <span>Sign Out</span>
+                    <span className="app-profile__pill">Exit</span>
+                  </button>
+                </div>
               </div>
             );
-
-          return null;
         })()}
       </main>
 

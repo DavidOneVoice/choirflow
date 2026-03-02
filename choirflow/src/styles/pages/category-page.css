@@ -1,0 +1,183 @@
+/* =========================
+   Category Page (scoped)
+   ========================= */
+
+.catpage {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+}
+
+.catpage-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.catpage-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  background: rgba(28, 110, 63, 0.06);
+  color: #1c6e3f;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.catpage-back:active {
+  transform: scale(0.98);
+}
+
+.catpage-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.catpage-titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.catpage-title {
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catpage-pill {
+  background: rgba(28, 110, 63, 0.12);
+  color: #1c6e3f;
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.catpage-sub {
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.catpage-empty {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.catpage-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.catpage-item {
+  background: #fff;
+  border-radius: 18px;
+  padding: 12px;
+  border: 1px solid rgba(28, 110, 63, 0.1);
+  box-shadow: 0 10px 25px rgba(10, 10, 10, 0.06);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border 0.18s ease;
+}
+
+.catpage-item:hover {
+  transform: translateY(-1px);
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  box-shadow: 0 18px 40px rgba(10, 10, 10, 0.1);
+}
+
+.catpage-item.is-edit {
+  border: 1px solid rgba(28, 110, 63, 0.22);
+  box-shadow: 0 18px 40px rgba(28, 110, 63, 0.1);
+}
+
+.catpage-view {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.catpage-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.catpage-songTitle {
+  font-size: 1.02rem;
+  font-weight: 950;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catpage-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.catpage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.8rem;
+  background: rgba(28, 110, 63, 0.08);
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  color: #1c6e3f;
+}
+
+.catpage-mini {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.catpage-actionsRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.catpage-editGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.catpage-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.catpage-input {
+  margin-bottom: 0;
+}

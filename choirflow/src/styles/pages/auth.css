@@ -1,0 +1,131 @@
+/* =========================
+   Auth page only
+   ========================= */
+
+.auth-page {
+  width: 100%;
+}
+
+/* Glassy card */
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px;
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(28, 110, 63, 0.14);
+  box-shadow: 0 18px 45px rgba(10, 10, 10, 0.1);
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle glow */
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: -120px -120px auto auto;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(
+    circle at center,
+    rgba(28, 110, 63, 0.18),
+    transparent 60%
+  );
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.auth-title {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.auth-sub {
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+}
+
+/* form spacing */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* password row */
+.auth-passWrap {
+  position: relative;
+}
+
+.auth-passInput {
+  padding-right: 46px !important;
+}
+
+/* icon button */
+.auth-eyeBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  transition:
+    transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.auth-eyeBtn:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.auth-eyeBtn svg {
+  opacity: 0.75;
+}
+
+/* primary button glow just for auth */
+.auth-submit {
+  width: 100%;
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 22px rgba(28, 110, 63, 0.22);
+}
+
+.auth-submit:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* links */
+.auth-links {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-link {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* small helper */
+.auth-hint {
+  color: var(--text-muted);
+  font-weight: 600;
+}

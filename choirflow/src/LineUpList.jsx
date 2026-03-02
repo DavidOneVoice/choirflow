@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { db, auth } from "./firebase/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import LineUpDetails from "./Components/lineup/LineUpDetails";
 import EditLineUp from "./EditLineUp";
 
+import "./styles/pages/lineup-list.css";
+
 export default function LineUpList({ onBack }) {
   const [lineups, setLineups] = useState([]);
   const [viewId, setViewId] = useState(null);
   const [editId, setEditId] = useState(null);
 
-  /* ---------- FETCH SAVED LINE-UPS ---------- */
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -30,6 +31,16 @@ export default function LineUpList({ onBack }) {
 
     return () => unsub();
   }, []);
+
+  const stats = useMemo(() => {
+    const total = lineups.length;
+    const worship = lineups.reduce(
+      (acc, l) => acc + (l.worship?.length || 0),
+      0,
+    );
+    const praise = lineups.reduce((acc, l) => acc + (l.praise?.length || 0), 0);
+    return { total, worship, praise };
+  }, [lineups]);
 
   /* ---------- EDIT SCREEN ---------- */
   if (editId) {
@@ -55,55 +66,62 @@ export default function LineUpList({ onBack }) {
     );
   }
 
-  /* ---------- MAIN LIST PAGE ---------- */
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <button
-        className="btn small"
-        onClick={onBack}
-        style={{
-          marginBottom: 10,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-        }}
-      >
-        <ArrowBackIcon /> <span>Back</span>
+    <div className="card ll">
+      <button className="btn small ll__back" onClick={onBack} aria-label="Back">
+        <ArrowBackIcon />
       </button>
 
-      <h1>Saved Line-Ups</h1>
+      <div className="ll__header">
+        <h1 className="ll__title">Saved Line-Ups</h1>
+        <p className="muted ll__sub">
+          {stats.total} line-up{stats.total === 1 ? "" : "s"} • {stats.worship}{" "}
+          worship • {stats.praise} praise
+        </p>
+      </div>
 
       {lineups.length === 0 ? (
-        <p className="muted" style={{ marginTop: 15 }}>
-          No line-ups saved yet.
-        </p>
+        <div className="ll__empty">
+          <div className="ll__emptyIcon" aria-hidden="true">
+            ♫
+          </div>
+          <h3 className="ll__emptyTitle">No line-ups yet</h3>
+          <p className="muted ll__emptyText">
+            Create your first line-up and it will show here.
+          </p>
+        </div>
       ) : (
-        lineups.map((lu) => {
-          const title = (lu.title || "").trim();
-          const key = lu.key || "Unknown";
+        <div className="ll__list">
+          {lineups.map((lu) => {
+            const title = (lu.title || "").trim();
+            const key = lu.key || "Unknown";
 
-          return (
-            <div
-              key={lu.id}
-              className="song-item"
-              style={{
-                borderBottom: "1px solid #eee",
-                padding: "12px 0",
-                cursor: "pointer",
-              }}
-              onClick={() => setViewId(lu.id)}
-            >
-              <h3 style={{ fontWeight: 700, marginBottom: 4 }}>
-                {title ? title : `Line-Up (Key: ${key})`}
-              </h3>
+            return (
+              <button
+                key={lu.id}
+                type="button"
+                className="ll__item"
+                onClick={() => setViewId(lu.id)}
+              >
+                <div className="ll__itemTop">
+                  <h3 className="ll__itemTitle">
+                    {title ? title : `Line-Up (Key: ${key})`}
+                  </h3>
 
-              <p className="muted" style={{ marginTop: 0 }}>
-                Key: {key} • {lu.worship?.length || 0} Worship •{" "}
-                {lu.praise?.length || 0} Praise
-              </p>
-            </div>
-          );
-        })
+                  <span className="ll__pill">
+                    {key}
+                    <span className="ll__pillSub">Maj</span>
+                  </span>
+                </div>
+
+                <p className="muted ll__meta">
+                  {lu.worship?.length || 0} Worship • {lu.praise?.length || 0}{" "}
+                  Praise
+                </p>
+              </button>
+            );
+          })}
+        </div>
       )}
     </div>
   );

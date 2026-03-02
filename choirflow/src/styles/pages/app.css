@@ -1,0 +1,69 @@
+/* =========================
+   App page / Profile page only
+   ========================= */
+
+.app-profile {
+  margin-top: 70px;
+}
+
+.app-profile__username {
+  margin-bottom: 28px;
+  font-weight: 600;
+}
+
+/* Premium button list */
+.app-profile__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.app-profile__actionBtn {
+  width: 100%;
+  padding: 18px 16px;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  font-weight: 850;
+  letter-spacing: -0.01em;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  transition:
+    transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+.app-profile__actionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+  border-color: rgba(28, 110, 63, 0.22);
+}
+
+.app-profile__actionBtn:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+/* Tiny badge on the right */
+.app-profile__pill {
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(28, 110, 63, 0.1);
+  color: var(--brand);
+  border: 1px solid rgba(28, 110, 63, 0.12);
+}
+.app-topbar {
+  background: #1c6e3f;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.app-topbar__iconBtn:active {
+  transform: scale(0.96);
+}

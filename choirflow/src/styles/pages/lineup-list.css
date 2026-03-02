@@ -1,0 +1,147 @@
+/* =========================
+   LineUp List (Scoped)
+   Classes: ll*
+   Brand: White + Green
+   ========================= */
+
+.ll {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+}
+
+.ll__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+.ll__header {
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.ll__title {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+.ll__sub {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Empty state */
+.ll__empty {
+  margin-top: 18px;
+  padding: 18px 14px;
+  border-radius: 20px;
+  border: 1px dashed rgba(28, 110, 63, 0.22);
+  background: rgba(28, 110, 63, 0.05);
+  text-align: center;
+}
+
+.ll__emptyIcon {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: #1c6e3f;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  box-shadow: 0 14px 34px rgba(10, 10, 10, 0.08);
+}
+
+.ll__emptyTitle {
+  margin: 0 0 6px;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+}
+
+.ll__emptyText {
+  margin: 0;
+}
+
+/* List */
+.ll__list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Item as button (better mobile tap target) */
+.ll__item {
+  text-align: left;
+  width: 100%;
+  border: 1px solid rgba(28, 110, 63, 0.1);
+  background: #fff;
+  border-radius: 18px;
+  padding: 12px 12px;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(10, 10, 10, 0.06);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border 0.18s ease;
+}
+
+.ll__item:hover {
+  transform: translateY(-1px);
+  border: 1px solid rgba(28, 110, 63, 0.18);
+  box-shadow: 0 18px 40px rgba(10, 10, 10, 0.1);
+}
+
+.ll__item:active {
+  transform: scale(0.995);
+}
+
+.ll__itemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ll__itemTitle {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.ll__meta {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+}
+
+/* Pill */
+.ll__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  background: rgba(28, 110, 63, 0.06);
+  color: #1c6e3f;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.ll__pillSub {
+  font-size: 0.75rem;
+  font-weight: 950;
+  opacity: 0.75;
+}

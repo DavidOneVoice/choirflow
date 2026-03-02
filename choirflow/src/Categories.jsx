@@ -1,36 +1,40 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
+import "./styles/pages/categories.css";
 
 export default function Categories({ onSelectCategory }) {
   const [counts, setCounts] = useState({});
 
-  const categories = [
-    "Worship",
-    "General Praise",
-    "Fast Highlife",
-    "Slow Highlife",
-    "Makossa",
-    "Gospel Jazz",
-    "Afrobeat",
-    "Fuji",
-    "Juju",
-    "Folk",
-    "FuNK",
-    "Apala",
-    "Raggae",
-    "Non-Nigerian Songs",
-    "Contemporary [Modern] Praise",
-    "Prayer Songs",
-    "Communion Praise",
-    "Anointing Praise",
-    "Woro [Igbo]",
-    "Woro [Yoruba]",
-    "Woro [Niger-Delta]",
-    "Revival Songs",
-    "Soul Winning Songs",
-    "Others",
-  ];
+  const categories = useMemo(
+    () => [
+      "Worship",
+      "General Praise",
+      "Fast Highlife",
+      "Slow Highlife",
+      "Makossa",
+      "Jazz",
+      "Afrobeat",
+      "Fuji",
+      "Juju",
+      "Folk",
+      "FunK",
+      "Apala",
+      "Raggae",
+      "Non-Nigerian Songs",
+      "Contemporary [Modern] Praise",
+      "Prayer Songs",
+      "Communion Praise",
+      "Anointing Praise",
+      "Woro [Igbo]",
+      "Woro [Yoruba]",
+      "Woro [Niger-Delta]",
+      "Revival Songs",
+      "Soul Winning Songs",
+      "Others",
+    ],
+    [],
+  );
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -52,22 +56,40 @@ export default function Categories({ onSelectCategory }) {
   }, []);
 
   return (
-    <div className="card" style={{ width: "100%", maxWidth: 420 }}>
-      <h1 style={{ marginBottom: 12 }}>Categories</h1>
+    <div className="card categories-page">
+      <div className="categories-head">
+        <div>
+          <h1 className="categories-title">Categories</h1>
+          <p className="categories-sub muted">
+            Tap a category to view songs inside it.
+          </p>
+        </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className="category-card"
-            onClick={() => onSelectCategory(cat)}
-          >
-            <div className="cat-name">{cat}</div>
-            <div className="cat-count">
-              {counts[cat] ? `${counts[cat]} songs` : "0 songs"}
-            </div>
-          </button>
-        ))}
+        <div className="categories-pill">
+          {Object.values(counts).reduce((a, b) => a + b, 0) || 0} total
+        </div>
+      </div>
+
+      <div className="categories-grid">
+        {categories.map((cat) => {
+          const count = counts[cat] || 0;
+          return (
+            <button
+              key={cat}
+              className="category-tile"
+              onClick={() => onSelectCategory(cat)}
+            >
+              <div className="category-tile-top">
+                <div className="category-tile-name">{cat}</div>
+                <div className="category-tile-badge">{count}</div>
+              </div>
+
+              <div className="category-tile-meta">
+                {count === 1 ? "1 song" : `${count} songs`}
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

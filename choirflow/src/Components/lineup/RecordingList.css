@@ -1,0 +1,7 @@
+.cf-rec__btn--iconText {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
