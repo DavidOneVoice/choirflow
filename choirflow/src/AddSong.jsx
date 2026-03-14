@@ -228,7 +228,6 @@ export default function AddSong({ onAdded }) {
             <MiniKeyboard
               onPick={(note) => {
                 setKey(note);
-                setShowKb(false);
               }}
             />
           </div>
