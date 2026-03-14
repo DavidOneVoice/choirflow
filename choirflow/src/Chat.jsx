@@ -42,6 +42,8 @@ export default function Chat({ user }) {
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [userLoadError, setUserLoadError] = useState("");
 
   useEffect(() => {
     const q = query(
@@ -138,10 +140,11 @@ export default function Chat({ user }) {
 
   const searchResults = useMemo(() => {
     const term = searchText.trim().toLowerCase();
-    if (!term) return [];
+    const candidates = allUsers.filter((person) => person.uid !== user.uid);
 
-    return allUsers
-      .filter((person) => person.uid !== user.uid)
+    if (!term) return candidates.slice(0, 8);
+
+    return candidates
       .filter((person) => {
         const username = (person.username || "").toLowerCase();
         const email = (person.email || "").toLowerCase();
@@ -152,6 +155,7 @@ export default function Chat({ user }) {
 
   const loadUsers = async () => {
     setLoadingUsers(true);
+    setUserLoadError("");
     try {
       const snapshot = await getDocs(collection(db, "users"));
       setAllUsers(
@@ -160,6 +164,9 @@ export default function Chat({ user }) {
           ...item.data(),
         })),
       );
+    } catch (error) {
+      setUserLoadError("Unable to load users right now. Please try again.");
+      console.error("Failed to load user directory", error);
     } finally {
       setLoadingUsers(false);
     }
@@ -168,6 +175,8 @@ export default function Chat({ user }) {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  const showSearchResults = isSearchActive || !!searchText.trim();
 
   const openChatWithUser = async (targetUser) => {
     const chatId = buildChatId(user.uid, targetUser.uid);
@@ -248,13 +257,18 @@ export default function Chat({ user }) {
           placeholder="Search by username or email"
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
+          onFocus={() => setIsSearchActive(true)}
+          onBlur={() => {
+            window.setTimeout(() => setIsSearchActive(false), 120);
+          }}
         />
       </div>
 
-      {!!searchText.trim() && (
+      {showSearchResults && (
         <div className="chat-searchResults">
-          {loadingUsers && <p className="muted">Searching users…</p>}
-          {!loadingUsers && !searchResults.length && (
+          {loadingUsers && <p className="muted">Loading users…</p>}
+          {!!userLoadError && <p className="muted">{userLoadError}</p>}
+          {!loadingUsers && !userLoadError && !searchResults.length && (
             <p className="muted">No users found.</p>
           )}
           {searchResults.map((person) => (
