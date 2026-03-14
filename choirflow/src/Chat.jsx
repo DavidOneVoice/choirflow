@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { db } from "./firebase/firebase";
 import SendIcon from "@mui/icons-material/Send";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import {
   addDoc,
   arrayUnion,
@@ -507,7 +508,7 @@ export default function Chat({ user }) {
                     onClick={closeActiveChat}
                     aria-label="Back to conversations"
                   >
-                    ← Back
+                    <KeyboardBackspaceIcon />
                   </button>
                   <h3 className="chat-paneTitle">
                     {activeChat.profile?.username ||
