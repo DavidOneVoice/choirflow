@@ -5,11 +5,11 @@ import { auth, db } from "./firebase/firebase";
 import "./styles/pages/auth.css";
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { ensureFirestoreUserProfile } from "./utils/userProfile";
 
 export default function Auth({ onAuthSuccess }) {
   const [mode, setMode] = useState("login");
@@ -45,26 +45,13 @@ export default function Auth({ onAuthSuccess }) {
           password,
         );
 
-        await setDoc(
-          doc(db, "users", credential.user.uid),
-          {
-            uid: credential.user.uid,
-            email: (credential.user.email || email).trim().toLowerCase(),
-            username:
-              credential.user.displayName ||
-              localStorage.getItem("choirflow_username") ||
-              credential.user.email?.split("@")[0] ||
-              "Unknown",
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
-        );
-
+        await ensureFirestoreUserProfile(db, credential.user);
         onAuthSuccess();
       }
 
       if (mode === "signup") {
-        if (!username.trim()) {
+        const cleanedUsername = username.trim();
+        if (!cleanedUsername) {
           alert("Username is required");
           setLoading(false);
           return;
@@ -75,21 +62,14 @@ export default function Auth({ onAuthSuccess }) {
           email,
           password,
         );
-        await updateProfile(credential.user, { displayName: username.trim() });
+        await updateProfile(credential.user, { displayName: cleanedUsername });
+        localStorage.setItem("choirflow_username", cleanedUsername);
 
-        await setDoc(
-          doc(db, "users", credential.user.uid),
-          {
-            uid: credential.user.uid,
-            email: email.trim().toLowerCase(),
-            username: username.trim(),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
-        );
+        await ensureFirestoreUserProfile(db, {
+          ...credential.user,
+          displayName: cleanedUsername,
+        });
 
-        localStorage.setItem("choirflow_username", username.trim());
         onAuthSuccess();
       }
 
@@ -178,74 +158,39 @@ export default function Auth({ onAuthSuccess }) {
               : mode === "login"
                 ? "Login"
                 : mode === "signup"
-                  ? "Sign Up"
+                  ? "Create Account"
                   : "Send Reset Link"}
           </button>
         </form>
 
-        <div className="auth-links">
-          {mode === "login" && (
-            <>
-              <div
-                className="auth-link"
-                onClick={() => {
-                  setMode("reset");
-                  resetForm();
-                }}
-              >
-                Forgot password?
-              </div>
-
-              <div
-                className="auth-hint"
-                onClick={() => {
-                  setMode("signup");
-                  resetForm();
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                Don’t have an account?{" "}
-                <span
-                  className="auth-link"
-                  style={{ textDecoration: "underline" }}
-                >
-                  Sign up
-                </span>
-              </div>
-            </>
-          )}
-
-          {mode === "signup" && (
-            <div
-              className="auth-hint"
-              onClick={() => {
-                setMode("login");
-                resetForm();
-              }}
-              style={{ cursor: "pointer" }}
-            >
-              Already have an account?{" "}
-              <span
-                className="auth-link"
-                style={{ textDecoration: "underline" }}
-              >
-                Login
-              </span>
-            </div>
-          )}
-
-          {mode === "reset" && (
-            <div
+        {mode === "login" && (
+          <>
+            <button
               className="auth-link"
               onClick={() => {
-                setMode("login");
-                resetForm();
+                setMode("reset");
+                setPassword("");
               }}
             >
-              Back to Login
-            </div>
-          )}
-        </div>
+              Forgot password?
+            </button>
+            <button className="auth-link" onClick={() => setMode("signup")}>
+              Don’t have an account? Sign up
+            </button>
+          </>
+        )}
+
+        {mode === "signup" && (
+          <button className="auth-link" onClick={() => setMode("login")}>
+            Already have an account? Login
+          </button>
+        )}
+
+        {mode === "reset" && (
+          <button className="auth-link" onClick={() => setMode("login")}>
+            Back to login
+          </button>
+        )}
       </div>
     </div>
   );

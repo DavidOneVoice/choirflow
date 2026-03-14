@@ -193,3 +193,46 @@
     font-size: 1.25rem;
   }
 }
+
+
+.lineup-details__shareBtn {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-color: rgba(28, 110, 63, 0.2);
+  color: #14552f;
+}
+
+.lineup-details__modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 25, 18, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 40;
+}
+
+.lineup-details__modalCard {
+  width: 100%;
+  max-width: 360px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(28, 110, 63, 0.16);
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+}
+
+.lineup-details__modalCard h3 {
+  margin: 0 0 8px;
+}
+
+.lineup-details__modalCard .btn {
+  margin-top: 6px;
+  width: 100%;
+}

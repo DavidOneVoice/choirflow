@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { auth, db } from "../../firebase/firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ShareIcon from "@mui/icons-material/Share";
 import { useLineupRecordings } from "../../hooks/useLineupRecordings";
 import RecordingListReadOnly from "../../Components/lineup/RecordingListReadOnly";
 import { useLineupDetails } from "../../hooks/useLineupDetails";
@@ -13,6 +14,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
   const { lineup, loading } = useLineupDetails(id);
   const { recordings } = useLineupRecordings(id);
   const { confirm, confirmDialog } = useConfirmDialog();
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const deleteLineup = async () => {
     const shouldDelete = await confirm({
@@ -65,21 +67,17 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
               Key: <b>{lineup.key}</b>
             </span>
             <span className="lineup-details__counts muted">
-              {lineup.worship?.length || 0} Worship •{" "}
-              {lineup.praise?.length || 0} Praise
+              {lineup.worship?.length || 0} Worship • {lineup.praise?.length || 0} Praise
             </span>
           </div>
         </div>
       </header>
 
-      {/* WORSHIP */}
       {lineup.worship?.length > 0 && (
         <section className="lineup-details__section">
           <div className="lineup-details__sectionHead">
             <h3 className="lineup-details__sectionTitle">Worship Songs</h3>
-            <span className="lineup-details__badge">
-              {lineup.worship.length}
-            </span>
+            <span className="lineup-details__badge">{lineup.worship.length}</span>
           </div>
 
           <div className="lineup-details__list">
@@ -93,14 +91,11 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
         </section>
       )}
 
-      {/* PRAISE */}
       {lineup.praise?.length > 0 && (
         <section className="lineup-details__section">
           <div className="lineup-details__sectionHead">
             <h3 className="lineup-details__sectionTitle">Praise Songs</h3>
-            <span className="lineup-details__badge">
-              {lineup.praise.length}
-            </span>
+            <span className="lineup-details__badge">{lineup.praise.length}</span>
           </div>
 
           <div className="lineup-details__list">
@@ -114,13 +109,10 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
         </section>
       )}
 
-      {/* RECORDINGS */}
       <section className="lineup-details__section">
         <div className="lineup-details__sectionHead">
           <h3 className="lineup-details__sectionTitle">Rehearsal Recordings</h3>
-          <span className="lineup-details__badge">
-            {recordings?.length || 0}
-          </span>
+          <span className="lineup-details__badge">{recordings?.length || 0}</span>
         </div>
 
         <div className="lineup-details__recordings">
@@ -128,21 +120,18 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
         </div>
       </section>
 
-      {/* ACTIONS */}
       <footer className="lineup-details__footer">
-        <button
-          className="btn primary lineup-details__primaryBtn"
-          onClick={() => onEdit(lineup.id)}
-        >
+        <button className="btn primary lineup-details__primaryBtn" onClick={() => onEdit(lineup.id)}>
           Edit
         </button>
 
+        <button className="btn ghost lineup-details__shareBtn" onClick={() => setShowShareModal(true)}>
+          <ShareIcon fontSize="small" />
+          Share in Chat
+        </button>
+
         <div className="lineup-details__actionsRow">
-          <button
-            className="btn ghost lineup-details__iconBtn"
-            onClick={onBack}
-            title="Back"
-          >
+          <button className="btn ghost lineup-details__iconBtn" onClick={onBack} title="Back">
             <ArrowBackIcon />
           </button>
 
@@ -155,6 +144,21 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
           </button>
         </div>
       </footer>
+
+      {showShareModal && (
+        <div className="lineup-details__modalOverlay" role="dialog" aria-modal="true">
+          <div className="lineup-details__modalCard">
+            <h3>Line-up sharing is on the way</h3>
+            <p className="muted">
+              Secure lineup sharing in chat is being set up. This button will go live soon.
+            </p>
+            <button className="btn primary" onClick={() => setShowShareModal(false)}>
+              Understood
+            </button>
+          </div>
+        </div>
+      )}
+
       {confirmDialog}
     </div>
   );
