@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import logo from "./assets/logo.png";
 import Auth from "./Auth.jsx";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebase/firebase";
+import { auth, db } from "./firebase/firebase";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import Categories from "./Categories.jsx";
 import Home from "./Home";
 import AddSong from "./AddSong";
@@ -38,6 +45,99 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  /* -------------------- ENSURE FIRESTORE USER PROFILE -------------------- */
+  useEffect(() => {
+    const ensureUserProfile = async () => {
+      if (!user?.uid) return;
+
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        const savedUsername = localStorage.getItem("choirflow_username") || "";
+        const derivedUsername =
+          user.displayName ||
+          savedUsername ||
+          user.email?.split("@")[0] ||
+          "Unknown";
+
+        if (!snap.exists()) {
+          await setDoc(ref, {
+            uid: user.uid,
+            email: (user.email || "").trim().toLowerCase(),
+            username: derivedUsername,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+        } else {
+          const data = snap.data() || {};
+
+          await setDoc(
+            ref,
+            {
+              uid: user.uid,
+              email: (user.email || data.email || "").trim().toLowerCase(),
+              username: data.username || derivedUsername,
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true },
+          );
+        }
+      } catch (error) {
+        console.error("Failed to ensure Firestore user profile", error);
+      }
+    };
+
+    ensureUserProfile();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const userRef = doc(db, "users", user.uid);
+
+    const markOnline = async () => {
+      try {
+        await setDoc(
+          userRef,
+          {
+            isOnline: true,
+            lastSeenAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      } catch (error) {
+        console.error("Failed to mark user online", error);
+      }
+    };
+
+    const markOffline = async () => {
+      try {
+        await updateDoc(userRef, {
+          isOnline: false,
+          lastSeenAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } catch (error) {
+        console.error("Failed to mark user offline", error);
+      }
+    };
+
+    markOnline();
+
+    const handleBeforeUnload = () => {
+      markOffline();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      markOffline();
+    };
+  }, [user]);
 
   /* ------------------ SPLASH SCREEN TIMERS ------------------- */
   useEffect(() => {
@@ -83,7 +183,6 @@ export default function App() {
   /* ------------------------ MAIN CONTENT ------------------------ */
   return (
     <div className="app-root">
-      {/* Top Bar */}
       <header className="topbar app-topbar">
         <div className="brand">
           <img src={logo} className="topbar-logo" alt="ChoirFlow Logo" />
@@ -97,48 +196,42 @@ export default function App() {
         </button>
       </header>
 
-      {/* Page Body */}
       <main className="screen-center">
-        {/* Centralized routing */}
         {(() => {
-          // HOME
           if (tab === "home") return <Home />;
 
-          // ADD SONG
           if (tab === "add") return <AddSong onAdded={() => setTab("home")} />;
 
-          // CHAT
           if (tab === "chat") return <Chat user={user} />;
 
-          // CATEGORIES
-          if (tab === "categories")
+          if (tab === "categories") {
             return (
               <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />
             );
+          }
 
-          // CATEGORY PAGE
-          if (tab.startsWith("cat_"))
+          if (tab.startsWith("cat_")) {
             return (
               <CategoryPage
                 category={tab.replace("cat_", "")}
                 onBack={() => setTab("categories")}
               />
             );
+          }
 
-          // CREATE LINEUPS
-          if (tab === "lineups")
+          if (tab === "lineups") {
             return (
               <LineUps
                 onBack={() => setTab("profile")}
                 onViewList={() => setTab("lineupsList")}
               />
             );
+          }
 
-          // VIEW SAVED LINEUPS
-          if (tab === "lineupsList")
+          if (tab === "lineupsList") {
             return <LineUpList onBack={() => setTab("profile")} />;
+          }
 
-          // LINEUP DETAILS
           if (tab.startsWith("lineup_")) {
             const lineupId = tab.replace("lineup_", "");
             return (
@@ -150,7 +243,6 @@ export default function App() {
             );
           }
 
-          // EDIT LINEUP
           if (tab.startsWith("editLineup_")) {
             const lineupId = tab.replace("editLineup_", "");
             return (
@@ -161,10 +253,9 @@ export default function App() {
             );
           }
 
-          // SEARCH
           if (tab === "search") return <SearchFilters />;
 
-          if (tab === "profile")
+          if (tab === "profile") {
             return (
               <div className="card app-profile">
                 <h1>Profile</h1>
@@ -216,10 +307,12 @@ export default function App() {
                 </div>
               </div>
             );
+          }
+
+          return null;
         })()}
       </main>
 
-      {/* Bottom Navigation */}
       <nav className="bottom-nav">
         <button className="nav-btn" onClick={() => setTab("home")}>
           <HomeIcon active={tab === "home"} />
@@ -228,7 +321,7 @@ export default function App() {
           <AddIcon active={tab === "add"} />
         </button>
         <button className="nav-btn" onClick={() => setTab("chat")}>
-          <ChatIcon active={tab === "chat"} />
+          <ChatIcon />
         </button>
         <button className="nav-btn" onClick={() => setTab("categories")}>
           <CategoryIcon active={tab === "categories"} />

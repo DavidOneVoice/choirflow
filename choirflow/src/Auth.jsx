@@ -39,7 +39,11 @@ export default function Auth({ onAuthSuccess }) {
       setLoading(true);
 
       if (mode === "login") {
-        const credential = await signInWithEmailAndPassword(auth, email, password);
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
 
         await setDoc(
           doc(db, "users", credential.user.uid),
@@ -49,7 +53,8 @@ export default function Auth({ onAuthSuccess }) {
             username:
               credential.user.displayName ||
               localStorage.getItem("choirflow_username") ||
-              "",
+              credential.user.email?.split("@")[0] ||
+              "Unknown",
             updatedAt: serverTimestamp(),
           },
           { merge: true },
@@ -65,7 +70,11 @@ export default function Auth({ onAuthSuccess }) {
           return;
         }
 
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        const credential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
         await updateProfile(credential.user, { displayName: username.trim() });
 
         await setDoc(

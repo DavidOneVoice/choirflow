@@ -9,6 +9,9 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  startAt,
+  endAt,
+  limit,
   orderBy,
   query,
   serverTimestamp,
@@ -63,7 +66,8 @@ export default function Chat({ user }) {
           const otherParticipantId = (data.participants || []).find(
             (id) => id !== user.uid,
           );
-          const profile = data.participantProfiles?.[otherParticipantId] || null;
+          const profile =
+            data.participantProfiles?.[otherParticipantId] || null;
           const latestMessage = data.latestMessage || null;
           const unread =
             !!latestMessage &&
@@ -128,7 +132,9 @@ export default function Chat({ user }) {
           return;
         }
 
-        setMessageLoadError("Unable to load messages right now. Please try again.");
+        setMessageLoadError(
+          "Unable to load messages right now. Please try again.",
+        );
         console.error("Failed to load messages", error);
       },
     );
@@ -141,7 +147,8 @@ export default function Chat({ user }) {
 
     const unreadIncoming = messages.filter(
       (message) =>
-        message.senderId !== user.uid && !(message.readBy || []).includes(user.uid),
+        message.senderId !== user.uid &&
+        !(message.readBy || []).includes(user.uid),
     );
 
     if (!unreadIncoming.length) return;
@@ -221,23 +228,28 @@ export default function Chat({ user }) {
   const openChatWithUser = async (targetUser) => {
     const chatId = buildChatId(user.uid, targetUser.uid);
     const chatRef = doc(db, "chats", chatId);
-    const existing = await getDoc(chatRef);
 
     const me = {
       uid: user.uid,
       email: user.email || "",
       username:
-        user.displayName || localStorage.getItem("choirflow_username") || "Unknown",
+        user.displayName ||
+        localStorage.getItem("choirflow_username") ||
+        "Unknown",
+      isOnline: true,
     };
 
     const peer = {
       uid: targetUser.uid,
       email: targetUser.email || "",
       username: targetUser.username || targetUser.email || "Unknown",
+      isOnline: !!targetUser.isOnline,
+      lastSeenAt: targetUser.lastSeenAt || null,
     };
 
-    if (!existing.exists()) {
-      await setDoc(chatRef, {
+    await setDoc(
+      chatRef,
+      {
         participants: [user.uid, targetUser.uid],
         participantProfiles: {
           [user.uid]: me,
@@ -245,22 +257,16 @@ export default function Chat({ user }) {
         },
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
-    } else {
-      await updateDoc(chatRef, {
-        participantProfiles: {
-          ...(existing.data().participantProfiles || {}),
-          [user.uid]: me,
-          [targetUser.uid]: peer,
-        },
-      });
-    }
+      },
+      { merge: true },
+    );
 
     setActiveChat({
       id: chatId,
       profile: peer,
     });
     setSearchText("");
+    setIsSearchActive(false);
   };
 
   const sendMessage = async () => {
@@ -288,6 +294,17 @@ export default function Chat({ user }) {
     setDraft("");
   };
 
+  function formatLastSeen(timestamp) {
+    if (!timestamp?.toDate) return "Offline";
+    const date = timestamp.toDate();
+    return `Last seen ${date.toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  }
+
   return (
     <div className="chat-page card">
       <div className="chat-searchBar">
@@ -296,6 +313,7 @@ export default function Chat({ user }) {
           className="input chat-searchInput"
           placeholder="Search by username or email"
           value={searchText}
+          autoComplete="off"
           onChange={(event) => setSearchText(event.target.value)}
           onFocus={() => {
             setIsSearchActive(true);
@@ -329,7 +347,9 @@ export default function Chat({ user }) {
               <span className="chat-userName">
                 {person.username || person.email || "Unknown user"}
               </span>
-              <span className="muted">{person.email}</span>
+              <span className="muted">
+                {person.isOnline ? "Online" : formatLastSeen(person.lastSeenAt)}
+              </span>
             </button>
           ))}
         </div>
@@ -358,7 +378,9 @@ export default function Chat({ user }) {
         <section className="chat-conversationList">
           {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
           {filteredChats.length === 0 && (
-            <p className="muted">No conversations yet. Search for a user above.</p>
+            <p className="muted">
+              No conversations yet. Search for a user above.
+            </p>
           )}
 
           {filteredChats.map((item) => (
@@ -378,27 +400,50 @@ export default function Chat({ user }) {
                 <p className="chat-userName">
                   {item.profile?.username || item.profile?.email || "Unknown"}
                 </p>
-                <p className="muted">{item.latestMessage?.text || "Start chatting"}</p>
+                <p className="muted chat-userStatus">
+                  {item.profile?.isOnline ? "Online" : "Offline"}
+                </p>
+
+                <p className="muted">
+                  {item.latestMessage?.text || "Start chatting"}
+                </p>
               </div>
-              {item.unread && <span className="chat-unreadDot" aria-hidden="true" />}
+              {item.unread && (
+                <span className="chat-unreadDot" aria-hidden="true" />
+              )}
             </button>
           ))}
         </section>
 
         <section className="chat-messagesPane">
           {!activeChat && (
-            <p className="muted">Select a chat from the left, or search a user above.</p>
+            <p className="muted">
+              Select a chat from the left, or search a user above.
+            </p>
           )}
 
           {activeChat && (
             <>
-              <h3 className="chat-paneTitle">
-                {activeChat.profile?.username || activeChat.profile?.email || "Chat"}
-              </h3>
+              <div className="chat-paneHeader">
+                <h3 className="chat-paneTitle">
+                  {activeChat.profile?.username ||
+                    activeChat.profile?.email ||
+                    "Chat"}
+                </h3>
+                <p className="muted chat-userStatus">
+                  {activeChat.profile?.isOnline
+                    ? "Online"
+                    : formatLastSeen(activeChat.profile?.lastSeenAt)}
+                </p>
+              </div>
 
               <div className="chat-messagesList">
-                {!!messageLoadError && <p className="muted">{messageLoadError}</p>}
-                {messages.length === 0 && <p className="muted">No messages yet.</p>}
+                {!!messageLoadError && (
+                  <p className="muted">{messageLoadError}</p>
+                )}
+                {messages.length === 0 && (
+                  <p className="muted">No messages yet.</p>
+                )}
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -407,7 +452,9 @@ export default function Chat({ user }) {
                     }`}
                   >
                     <p>{message.text}</p>
-                    <span className="muted chat-time">{formatTime(message.createdAt)}</span>
+                    <span className="muted chat-time">
+                      {formatTime(message.createdAt)}
+                    </span>
                   </div>
                 ))}
               </div>
