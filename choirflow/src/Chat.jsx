@@ -347,133 +347,148 @@ export default function Chat({ user }) {
     }
   };
 
+  const closeActiveChat = () => {
+    setActiveChat(null);
+    setMessages([]);
+  };
+
+  const isChatOpen = !!activeChat;
+
   return (
     <div className="chat-page card">
-      <div className="chat-searchBar">
-        <SearchIcon />
-        <input
-          className="input chat-searchInput"
-          placeholder="Search by username or email"
-          value={searchText}
-          autoComplete="off"
-          onChange={(event) => {
-            const value = event.target.value;
-            setSearchText(value);
-            if (!isUserDirectoryBlocked) {
-              loadUsers(value);
-            }
-          }}
-          onFocus={() => {
-            setIsSearchActive(true);
-            if (
-              !loadingUsers &&
-              !isUserDirectoryBlocked &&
-              (!allUsers.length || userLoadError)
-            ) {
-              loadUsers(searchText);
-            }
-          }}
-          onBlur={() => {
-            window.setTimeout(() => setIsSearchActive(false), 250);
-          }}
-        />
-      </div>
+      {!isChatOpen && (
+        <>
+          <div className="chat-searchBar">
+            <SearchIcon />
+            <input
+              className="input chat-searchInput"
+              placeholder="Search by username or email"
+              value={searchText}
+              autoComplete="off"
+              onChange={(event) => {
+                const value = event.target.value;
+                setSearchText(value);
+                if (!isUserDirectoryBlocked) {
+                  loadUsers(value);
+                }
+              }}
+              onFocus={() => {
+                setIsSearchActive(true);
+                if (
+                  !loadingUsers &&
+                  !isUserDirectoryBlocked &&
+                  (!allUsers.length || userLoadError)
+                ) {
+                  loadUsers(searchText);
+                }
+              }}
+              onBlur={() => {
+                window.setTimeout(() => setIsSearchActive(false), 250);
+              }}
+            />
+          </div>
 
-      {showSearchResults && (
-        <div className="chat-searchResults">
-          {loadingUsers && <p className="muted">Loading users…</p>}
-          {!!userLoadError && <p className="muted">{userLoadError}</p>}
-          {!loadingUsers && !userLoadError && !searchResults.length && (
-            <p className="muted">No users found.</p>
+          {showSearchResults && (
+            <div className="chat-searchResults">
+              {loadingUsers && <p className="muted">Loading users…</p>}
+              {!!userLoadError && <p className="muted">{userLoadError}</p>}
+              {!loadingUsers && !userLoadError && !searchResults.length && (
+                <p className="muted">No users found.</p>
+              )}
+
+              {searchResults.map((person) => (
+                <button
+                  key={person.uid}
+                  type="button"
+                  className="chat-searchItem"
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    openChatWithUser(person);
+                  }}
+                >
+                  <span className="chat-userName">
+                    {person.username || person.email || "Unknown user"}
+                  </span>
+                  <span className="muted">
+                    {person.isOnline
+                      ? "Online"
+                      : formatLastSeen(person.lastSeenAt)}
+                  </span>
+                </button>
+              ))}
+            </div>
           )}
 
-          {searchResults.map((person) => (
+          <div className="chat-filters">
             <button
-              key={person.uid}
               type="button"
-              className="chat-searchItem"
-              onPointerDown={(event) => {
-                event.preventDefault();
-                openChatWithUser(person);
-              }}
+              className={`chat-filterBtn ${
+                activeFilter === CHAT_FILTERS.all ? "is-active" : ""
+              }`}
+              onClick={() => setActiveFilter(CHAT_FILTERS.all)}
             >
-              <span className="chat-userName">
-                {person.username || person.email || "Unknown user"}
-              </span>
-              <span className="muted">
-                {person.isOnline ? "Online" : formatLastSeen(person.lastSeenAt)}
-              </span>
+              All Messages
             </button>
-          ))}
-        </div>
+
+            <button
+              type="button"
+              className={`chat-filterBtn ${
+                activeFilter === CHAT_FILTERS.unread ? "is-active" : ""
+              }`}
+              onClick={() => setActiveFilter(CHAT_FILTERS.unread)}
+            >
+              Unread
+            </button>
+          </div>
+        </>
       )}
 
-      <div className="chat-filters">
-        <button
-          type="button"
-          className={`chat-filterBtn ${
-            activeFilter === CHAT_FILTERS.all ? "is-active" : ""
-          }`}
-          onClick={() => setActiveFilter(CHAT_FILTERS.all)}
-        >
-          All Messages
-        </button>
-
-        <button
-          type="button"
-          className={`chat-filterBtn ${
-            activeFilter === CHAT_FILTERS.unread ? "is-active" : ""
-          }`}
-          onClick={() => setActiveFilter(CHAT_FILTERS.unread)}
-        >
-          Unread
-        </button>
-      </div>
-
       <div className="chat-layout">
-        <section className="chat-conversationList">
-          {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
+        {!isChatOpen && (
+          <section className="chat-conversationList">
+            {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
 
-          {filteredChats.length === 0 && (
-            <p className="muted">
-              No conversations yet. Search for a user above.
-            </p>
-          )}
+            {filteredChats.length === 0 && (
+              <p className="muted">
+                No conversations yet. Search for a user above.
+              </p>
+            )}
 
-          {filteredChats.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`chat-conversationItem ${
-                activeChat?.id === item.id ? "is-active" : ""
-              }`}
-              onClick={() =>
-                setActiveChat({
-                  id: item.id,
-                  profile: item.profile,
-                })
-              }
-            >
-              <div>
-                <p className="chat-userName">
-                  {item.profile?.username || item.profile?.email || "Unknown"}
-                </p>
-                <p className="muted chat-userStatus">
-                  {item.profile?.isOnline
-                    ? "Online"
-                    : formatLastSeen(item.profile?.lastSeenAt)}
-                </p>
-                <p className="muted">
-                  {item.latestMessage?.text || "Start chatting"}
-                </p>
-              </div>
+            {filteredChats.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`chat-conversationItem ${
+                  activeChat?.id === item.id ? "is-active" : ""
+                }`}
+                onClick={() =>
+                  setActiveChat({
+                    id: item.id,
+                    profile: item.profile,
+                  })
+                }
+              >
+                <div>
+                  <p className="chat-userName">
+                    {item.profile?.username || item.profile?.email || "Unknown"}
+                  </p>
+                  <p className="muted chat-userStatus">
+                    {item.profile?.isOnline
+                      ? "Online"
+                      : formatLastSeen(item.profile?.lastSeenAt)}
+                  </p>
+                  <p className="muted">
+                    {item.latestMessage?.text || "Start chatting"}
+                  </p>
+                </div>
 
-              {item.unread && (
-                <span className="chat-unreadDot" aria-hidden="true" />
-              )}
-            </button>
-          ))}
-        </section>
+                {item.unread && (
+                  <span className="chat-unreadDot" aria-hidden="true" />
+                )}
+              </button>
+            ))}
+          </section>
+        )}
 
         <section className="chat-messagesPane">
           {!activeChat && (
@@ -485,11 +500,21 @@ export default function Chat({ user }) {
           {activeChat && (
             <>
               <div className="chat-paneHeader">
-                <h3 className="chat-paneTitle">
-                  {activeChat.profile?.username ||
-                    activeChat.profile?.email ||
-                    "Chat"}
-                </h3>
+                <div className="chat-paneTitleRow">
+                  <button
+                    type="button"
+                    className="chat-backBtn"
+                    onClick={closeActiveChat}
+                    aria-label="Back to conversations"
+                  >
+                    ← Back
+                  </button>
+                  <h3 className="chat-paneTitle">
+                    {activeChat.profile?.username ||
+                      activeChat.profile?.email ||
+                      "Chat"}
+                  </h3>
+                </div>
                 <p className="muted chat-userStatus">
                   {activeChat.profile?.isOnline
                     ? "Online"
