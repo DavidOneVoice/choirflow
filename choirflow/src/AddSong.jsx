@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import PianoIcon from "@mui/icons-material/Piano";
+import CloseIcon from "@mui/icons-material/Close";
+import MiniKeyboard from "./Components/music/MiniKeyboard";
 
 export default function AddSong({ onAdded }) {
   const [title, setTitle] = useState("");
@@ -8,6 +11,7 @@ export default function AddSong({ onAdded }) {
   const [category, setCategory] = useState("");
   const [tier, setTier] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showKb, setShowKb] = useState(false);
 
   const praiseCategories = [
     "General Praise",
@@ -112,7 +116,6 @@ export default function AddSong({ onAdded }) {
       <h1 style={{ marginBottom: 14 }}>Add Song</h1>
 
       <form onSubmit={handleSubmit}>
-        {/* Song Title */}
         <input
           type="text"
           className="input"
@@ -122,22 +125,42 @@ export default function AddSong({ onAdded }) {
           required
         />
 
-        {/* Key */}
-        <select
-          className="input"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          required
-        >
-          <option value="">Select Key</option>
-          {musicalKeys.map((k) => (
-            <option key={k} value={k}>
-              {k} Major
-            </option>
-          ))}
-        </select>
+        <section className="lc__section">
+          <div className="lc__row">
+            <span className="lc__label">Select Key</span>
 
-        {/* Category */}
+            <button
+              type="button"
+              className="lc__kbdBtn"
+              onClick={() => setShowKb(true)}
+            >
+              <PianoIcon style={{ fontSize: 18 }} />
+              <span>Keyboard</span>
+            </button>
+          </div>
+
+          <select
+            className="input lc__select"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            required
+          >
+            <option value="">Select Key</option>
+            {musicalKeys.map((k) => (
+              <option key={k} value={k}>
+                {k} Major
+              </option>
+            ))}
+          </select>
+
+          {key && (
+            <div style={{ marginBottom: "1rem" }} className="lc__chip">
+              <span className="lc__chipLabel">Selected</span>
+              <b className="lc__chipValue">{key} Major</b>
+            </div>
+          )}
+        </section>
+
         <select
           className="input"
           value={category}
@@ -152,7 +175,6 @@ export default function AddSong({ onAdded }) {
           ))}
         </select>
 
-        {/* Tier (Only visible for Praise categories) */}
         {praiseCategories.includes(category) && (
           <select
             className="input"
@@ -176,6 +198,42 @@ export default function AddSong({ onAdded }) {
           {loading ? "Saving..." : "Save Song"}
         </button>
       </form>
+
+      {showKb && (
+        <div
+          className="lc__modalOverlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowKb(false)}
+        >
+          <div className="lc__modal" onClick={(e) => e.stopPropagation()}>
+            <div className="lc__modalHead">
+              <div>
+                <h3 className="lc__modalTitle">Keyboard</h3>
+                <p className="lc__modalSub muted">
+                  Tap a note to hear it and set the key.
+                </p>
+              </div>
+
+              <button
+                className="lc__modalClose"
+                onClick={() => setShowKb(false)}
+                aria-label="Close keyboard"
+                type="button"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <MiniKeyboard
+              onPick={(note) => {
+                setKey(note);
+                setShowKb(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

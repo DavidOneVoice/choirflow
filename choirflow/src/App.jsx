@@ -11,7 +11,9 @@ import CategoryPage from "./CategoryPage.jsx";
 import LineUps from "./LineUps.jsx";
 import LineUpList from "./LineUpList.jsx";
 import LineUpDetails from "./Components/lineup/LineUpDetails.jsx";
+import Chat from "./Chat.jsx";
 import EditLineUp from "./EditLineUp.jsx";
+import ChatIcon from "@mui/icons-material/Chat";
 import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import "./styles/tokens.css";
@@ -22,6 +24,7 @@ import "./styles/components/inputs.css";
 import "./styles/components/buttons.css";
 import "./styles/components/nav.css";
 import "./styles/pages/app.css";
+import "./styles/pages/chat.css";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -104,6 +107,10 @@ export default function App() {
           // ADD SONG
           if (tab === "add") return <AddSong onAdded={() => setTab("home")} />;
 
+          // CHAT
+          if (tab === "chat")
+            return <ChatIcon onAdded={() => setTab("chat")} />;
+
           // CATEGORIES
           if (tab === "categories")
             return (
@@ -167,7 +174,7 @@ export default function App() {
                   Username:{" "}
                   {user.displayName ||
                     localStorage.getItem("choirflow_username") ||
-                    "One Voice"}
+                    "One Voice Tech"}
                 </h4>
 
                 <div className="app-profile__actions">
@@ -220,6 +227,9 @@ export default function App() {
         </button>
         <button className="nav-btn" onClick={() => setTab("add")}>
           <AddIcon active={tab === "add"} />
+        </button>
+        <button className="nav-btn" onClick={() => setTab("chat")}>
+          <ChatIcon active={tab === "chat"} />
         </button>
         <button className="nav-btn" onClick={() => setTab("categories")}>
           <CategoryIcon active={tab === "categories"} />

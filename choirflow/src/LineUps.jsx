@@ -1,13 +1,17 @@
-// LineUps.jsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import PianoIcon from "@mui/icons-material/Piano";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { db, auth } from "./firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import MiniKeyboard from "./Components/music/MiniKeyboard";
+import {
+  getCreateLineupDraftKey,
+  saveDraft,
+  loadDraft,
+  clearDraft,
+} from "./utils/lineupDraft";
 import "./styles/pages/lineup-create.css";
 
 export default function LineUps({ onBack, onViewList }) {
@@ -28,11 +32,57 @@ export default function LineUps({ onBack, onViewList }) {
     [],
   );
 
+  const draftKey = getCreateLineupDraftKey();
+
   const showToast = (msg) => {
     setToastMsg(msg);
-    window.clearTimeout(showToast._t);
-    showToast._t = window.setTimeout(() => setToastMsg(""), 2200);
+    setTimeout(() => setToastMsg(""), 2000);
   };
+
+  // Restore draft on mount
+  useEffect(() => {
+    const draft = loadDraft(draftKey);
+    if (!draft) return;
+
+    setKeySel(draft.keySel || "");
+    setTitle(draft.title || "");
+    setWorshipInput(draft.worshipInput || "");
+    setPraiseInput(draft.praiseInput || "");
+    setWorshipList(Array.isArray(draft.worshipList) ? draft.worshipList : []);
+    setPraiseList(Array.isArray(draft.praiseList) ? draft.praiseList : []);
+
+    const hasSomething =
+      draft.title ||
+      draft.keySel ||
+      (draft.worshipList && draft.worshipList.length > 0) ||
+      (draft.praiseList && draft.praiseList.length > 0) ||
+      draft.worshipInput ||
+      draft.praiseInput;
+
+    if (hasSomething) {
+      showToast("Draft restored");
+    }
+  }, [draftKey]);
+
+  // Auto-save draft whenever anything changes
+  useEffect(() => {
+    saveDraft(draftKey, {
+      title,
+      keySel,
+      worshipInput,
+      praiseInput,
+      worshipList,
+      praiseList,
+    });
+  }, [
+    draftKey,
+    title,
+    keySel,
+    worshipInput,
+    praiseInput,
+    worshipList,
+    praiseList,
+  ]);
 
   const addWorship = () => {
     const v = worshipInput.trim();
@@ -58,8 +108,9 @@ export default function LineUps({ onBack, onViewList }) {
 
   const handleSave = async () => {
     if (!keySel) return showToast("Select a key");
-    if (worshipList.length === 0 && praiseList.length === 0)
+    if (worshipList.length === 0 && praiseList.length === 0) {
       return showToast("Add at least one song");
+    }
 
     await addDoc(collection(db, "users", auth.currentUser.uid, "lineups"), {
       title: title.trim() || "",
@@ -68,6 +119,9 @@ export default function LineUps({ onBack, onViewList }) {
       praise: praiseList,
       createdAt: serverTimestamp(),
     });
+
+    // Clear draft after successful save
+    clearDraft(draftKey);
 
     setKeySel("");
     setTitle("");
@@ -82,21 +136,17 @@ export default function LineUps({ onBack, onViewList }) {
 
   return (
     <div className="card lc">
-      {/* Toast */}
       {toastMsg && <div className="lc__toast">{toastMsg}</div>}
 
-      {/* Top Back */}
       <button className="btn small lc__back" onClick={onBack} aria-label="Back">
         <ArrowBackIcon />
       </button>
 
-      {/* Header */}
       <div className="lc__header">
         <h1 className="lc__title">Create Line-Up</h1>
         <p className="lc__subtitle muted">Add songs, pick a key, then save.</p>
       </div>
 
-      {/* Title */}
       <section className="lc__section">
         <label className="lc__label">Title (optional)</label>
         <input
@@ -107,7 +157,6 @@ export default function LineUps({ onBack, onViewList }) {
         />
       </section>
 
-      {/* Key + Keyboard */}
       <section className="lc__section">
         <div className="lc__row">
           <span className="lc__label">Select Key</span>
@@ -143,7 +192,6 @@ export default function LineUps({ onBack, onViewList }) {
         )}
       </section>
 
-      {/* Worship */}
       <section className="lc__section">
         <div className="lc__row">
           <h3 className="lc__h3">Worship Songs</h3>
@@ -191,7 +239,6 @@ export default function LineUps({ onBack, onViewList }) {
         </div>
       </section>
 
-      {/* Praise */}
       <section className="lc__section">
         <div className="lc__row">
           <h3 className="lc__h3">Praise Songs</h3>
@@ -239,12 +286,10 @@ export default function LineUps({ onBack, onViewList }) {
         </div>
       </section>
 
-      {/* Save */}
       <button className="btn primary lc__save" onClick={handleSave}>
         Save Line-Up
       </button>
 
-      {/* After Save actions */}
       {showActions && (
         <div className="lc__actions">
           <button className="btn ghost" onClick={() => setShowActions(false)}>
@@ -257,7 +302,6 @@ export default function LineUps({ onBack, onViewList }) {
         </div>
       )}
 
-      {/* Keyboard Modal */}
       {showKb && (
         <div
           className="lc__modalOverlay"

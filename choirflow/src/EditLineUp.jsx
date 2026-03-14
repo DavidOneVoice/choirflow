@@ -1,4 +1,3 @@
-// EditLineUp.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
@@ -9,12 +8,17 @@ import { db, auth } from "./firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import RecordingsEditor from "./Components/lineup/RecordingsEditor";
 import MiniKeyboard from "./Components/music/MiniKeyboard";
-
+import {
+  getEditLineupDraftKey,
+  saveDraft,
+  loadDraft,
+  clearDraft,
+} from "./utils/lineupDraft";
 import "./styles/pages/lineup-edit.css";
 
 export default function EditLineUp({ id, onBack }) {
   const [loading, setLoading] = useState(true);
-
+  const draftKey = getEditLineupDraftKey(id);
   const [title, setTitle] = useState("");
   const [keySel, setKeySel] = useState("");
 
@@ -61,6 +65,65 @@ export default function EditLineUp({ id, onBack }) {
 
     load();
   }, [id]);
+
+  useEffect(() => {
+    if (!auth.currentUser || !id) return;
+
+    const load = async () => {
+      const ref = doc(db, "users", auth.currentUser.uid, "lineups", id);
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        const data = snap.data();
+
+        const draft = loadDraft(draftKey);
+
+        if (draft) {
+          setTitle(draft.title || "");
+          setKeySel(draft.keySel || "");
+          setWorshipInput(draft.worshipInput || "");
+          setPraiseInput(draft.praiseInput || "");
+          setWorshipList(
+            Array.isArray(draft.worshipList) ? draft.worshipList : [],
+          );
+          setPraiseList(
+            Array.isArray(draft.praiseList) ? draft.praiseList : [],
+          );
+        } else {
+          setTitle(data.title || "");
+          setKeySel(data.key || "");
+          setWorshipList(Array.isArray(data.worship) ? data.worship : []);
+          setPraiseList(Array.isArray(data.praise) ? data.praise : []);
+        }
+      }
+
+      setLoading(false);
+    };
+
+    load();
+  }, [id, draftKey]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    saveDraft(draftKey, {
+      title,
+      keySel,
+      worshipInput,
+      praiseInput,
+      worshipList,
+      praiseList,
+    });
+  }, [
+    draftKey,
+    id,
+    title,
+    keySel,
+    worshipInput,
+    praiseInput,
+    worshipList,
+    praiseList,
+  ]);
 
   const addWorship = () => {
     const v = worshipInput.trim();
@@ -111,6 +174,7 @@ export default function EditLineUp({ id, onBack }) {
       worship: worshipList,
       praise: praiseList,
     });
+    clearDraft(draftKey);
 
     alert("Line-up updated successfully!");
     onBack();
