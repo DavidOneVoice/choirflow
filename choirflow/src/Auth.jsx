@@ -1,13 +1,15 @@
 import { useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { auth } from "./firebase/firebase";
+import { auth, db } from "./firebase/firebase";
 import "./styles/pages/auth.css";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  updateProfile,
 } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 export default function Auth({ onAuthSuccess }) {
   const [mode, setMode] = useState("login");
@@ -37,7 +39,22 @@ export default function Auth({ onAuthSuccess }) {
       setLoading(true);
 
       if (mode === "login") {
-        await signInWithEmailAndPassword(auth, email, password);
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+
+        await setDoc(
+          doc(db, "users", credential.user.uid),
+          {
+            uid: credential.user.uid,
+            email: (credential.user.email || email).trim().toLowerCase(),
+            username:
+              credential.user.displayName ||
+              localStorage.getItem("choirflow_username") ||
+              "",
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
         onAuthSuccess();
       }
 
@@ -48,8 +65,22 @@ export default function Auth({ onAuthSuccess }) {
           return;
         }
 
-        await createUserWithEmailAndPassword(auth, email, password);
-        localStorage.setItem("choirflow_username", username);
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(credential.user, { displayName: username.trim() });
+
+        await setDoc(
+          doc(db, "users", credential.user.uid),
+          {
+            uid: credential.user.uid,
+            email: email.trim().toLowerCase(),
+            username: username.trim(),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        localStorage.setItem("choirflow_username", username.trim());
         onAuthSuccess();
       }
 

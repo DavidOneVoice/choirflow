@@ -108,8 +108,7 @@ export default function App() {
           if (tab === "add") return <AddSong onAdded={() => setTab("home")} />;
 
           // CHAT
-          if (tab === "chat")
-            return <ChatIcon onAdded={() => setTab("chat")} />;
+          if (tab === "chat") return <Chat user={user} />;
 
           // CATEGORIES
           if (tab === "categories")

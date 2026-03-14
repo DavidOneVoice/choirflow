@@ -1,0 +1,163 @@
+.chat-page {
+  width: min(1100px, 96vw);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.chat-searchBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-searchInput {
+  margin: 0;
+}
+
+.chat-searchResults {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.chat-searchItem {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  background: #fff;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-filterBtn {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+
+.chat-filterBtn.is-active {
+  background: #121212;
+  color: #fff;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: 12px;
+  min-height: 420px;
+}
+
+.chat-conversationList,
+.chat-messagesPane {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  background: #fff;
+}
+
+.chat-conversationList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-conversationItem {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  text-align: left;
+}
+
+.chat-conversationItem.is-active {
+  border-color: #121212;
+}
+
+.chat-unreadDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #11a94a;
+  flex-shrink: 0;
+}
+
+.chat-userName {
+  margin: 0;
+  font-weight: 700;
+}
+
+.chat-paneTitle {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chat-messagesPane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-messagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 280px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.chat-messageBubble {
+  max-width: 80%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: #f4f4f4;
+}
+
+.chat-messageBubble p {
+  margin: 0;
+}
+
+.chat-messageBubble.is-me {
+  margin-left: auto;
+  background: #daf8ca;
+}
+
+.chat-time {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.chat-composeRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+  }
+}
