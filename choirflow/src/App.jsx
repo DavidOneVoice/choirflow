@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import logo from "./assets/logo.png";
 import Auth from "./Auth.jsx";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase/firebase";
 import {
+  collection,
   doc,
-  getDoc,
+  onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import Categories from "./Categories.jsx";
 import Home from "./Home";
@@ -21,8 +25,9 @@ import LineUpDetails from "./Components/lineup/LineUpDetails.jsx";
 import Chat from "./Chat.jsx";
 import EditLineUp from "./EditLineUp.jsx";
 import ChatIcon from "@mui/icons-material/Chat";
-import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import { HomeIcon, AddIcon, CategoryIcon, ProfileIcon } from "./Icons";
+import { ensureFirestoreUserProfile } from "./utils/userProfile";
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/layout.css";
@@ -37,59 +42,35 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("home");
+  const [unreadTotalCount, setUnreadTotalCount] = useState(0);
+  const [chatRouteTarget, setChatRouteTarget] = useState(null);
+  const [chatToast, setChatToast] = useState(null);
+  const hasShownInitialUnreadToast = useRef(false);
+  const latestChatSignaturesRef = useRef(new Map());
 
-  /* -------------------- WATCH LOGIN STATE -------------------- */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      if (!u) {
+        setUnreadTotalCount(0);
+        hasShownInitialUnreadToast.current = false;
+        latestChatSignaturesRef.current = new Map();
+      }
     });
     return () => unsubscribe();
   }, []);
 
-  /* -------------------- ENSURE FIRESTORE USER PROFILE -------------------- */
   useEffect(() => {
-    const ensureUserProfile = async () => {
+    const ensureProfile = async () => {
       if (!user?.uid) return;
-
       try {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-
-        const savedUsername = localStorage.getItem("choirflow_username") || "";
-        const derivedUsername =
-          user.displayName ||
-          savedUsername ||
-          user.email?.split("@")[0] ||
-          "Unknown";
-
-        if (!snap.exists()) {
-          await setDoc(ref, {
-            uid: user.uid,
-            email: (user.email || "").trim().toLowerCase(),
-            username: derivedUsername,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
-        } else {
-          const data = snap.data() || {};
-
-          await setDoc(
-            ref,
-            {
-              uid: user.uid,
-              email: (user.email || data.email || "").trim().toLowerCase(),
-              username: data.username || derivedUsername,
-              updatedAt: serverTimestamp(),
-            },
-            { merge: true },
-          );
-        }
+        await ensureFirestoreUserProfile(db, user);
       } catch (error) {
         console.error("Failed to ensure Firestore user profile", error);
       }
     };
 
-    ensureUserProfile();
+    ensureProfile();
   }, [user]);
 
   useEffect(() => {
@@ -97,49 +78,115 @@ export default function App() {
 
     const userRef = doc(db, "users", user.uid);
 
-    const markOnline = async () => {
+    const markPresence = async (isOnline) => {
       try {
         await setDoc(
           userRef,
           {
-            isOnline: true,
+            isOnline,
             lastSeenAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           },
           { merge: true },
         );
       } catch (error) {
-        console.error("Failed to mark user online", error);
+        console.error("Failed to update presence", error);
       }
     };
 
-    const markOffline = async () => {
-      try {
-        await updateDoc(userRef, {
-          isOnline: false,
-          lastSeenAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      } catch (error) {
-        console.error("Failed to mark user offline", error);
-      }
-    };
+    markPresence(true);
 
-    markOnline();
+    const heartbeat = window.setInterval(() => {
+      if (document.visibilityState === "visible") markPresence(true);
+    }, 60000);
+
+    const handleVisibility = () => {
+      markPresence(document.visibilityState === "visible");
+    };
 
     const handleBeforeUnload = () => {
-      markOffline();
+      updateDoc(userRef, {
+        isOnline: false,
+        lastSeenAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }).catch(() => {});
     };
 
+    document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
+      clearInterval(heartbeat);
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      markOffline();
+      markPresence(false);
     };
   }, [user]);
 
-  /* ------------------ SPLASH SCREEN TIMERS ------------------- */
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const q = query(
+      collection(db, "chats"),
+      where("participants", "array-contains", user.uid),
+      orderBy("updatedAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        let totalUnread = 0;
+        const nextSignatures = new Map();
+
+        snapshot.docs.forEach((chatDoc) => {
+          const data = chatDoc.data();
+          const unread = Number(data.unreadCounts?.[user.uid] || 0);
+          totalUnread += unread;
+
+          const latest = data.latestMessage;
+          const otherId = (data.participants || []).find((id) => id !== user.uid);
+          const profile = data.participantProfiles?.[otherId] || null;
+          const createdAt = latest?.createdAt?.toMillis?.() || "no-time";
+          const signature = latest
+            ? `${latest.senderId || ""}:${latest.text || ""}:${createdAt}`
+            : "";
+
+          nextSignatures.set(chatDoc.id, signature);
+
+          if (!latest || latest.senderId === user.uid || unread <= 0) return;
+
+          const previous = latestChatSignaturesRef.current.get(chatDoc.id);
+          if (previous && previous !== signature) {
+            setChatToast({
+              title: profile?.username || profile?.email || "New message",
+              message: latest.text || "You have a new message.",
+              chatId: chatDoc.id,
+              profile,
+            });
+          }
+        });
+
+        if (!hasShownInitialUnreadToast.current && totalUnread > 0) {
+          setChatToast({
+            title: "Unread messages",
+            message: `You have ${totalUnread} unread message${totalUnread > 1 ? "s" : ""}.`,
+            chatId: null,
+            profile: null,
+          });
+          hasShownInitialUnreadToast.current = true;
+        }
+
+        setUnreadTotalCount(totalUnread);
+        latestChatSignaturesRef.current = nextSignatures;
+      },
+      (error) => {
+        console.error("Failed to load unread chats", error);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
   useEffect(() => {
     document.title = "ChoirFlow";
 
@@ -156,12 +203,20 @@ export default function App() {
     };
   }, []);
 
-  /* ----------------- SCROLL TO TOP ON TAB CHANGE ----------------- */
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [tab]);
 
-  /* ------------------------- SHOW SPLASH ------------------------- */
+  const showChatUnreadBadge = useMemo(() => unreadTotalCount > 0, [unreadTotalCount]);
+
+  const goToChatFromToast = () => {
+    setTab("chat");
+    if (chatToast?.chatId) {
+      setChatRouteTarget({ chatId: chatToast.chatId, profile: chatToast.profile });
+    }
+    setChatToast(null);
+  };
+
   if (showSplash) {
     return (
       <div className="app-root splash-root">
@@ -175,12 +230,8 @@ export default function App() {
     );
   }
 
-  /* ------------------------- SHOW AUTH ------------------------- */
-  if (!user) {
-    return <Auth onAuthSuccess={() => {}} />;
-  }
+  if (!user) return <Auth onAuthSuccess={() => {}} />;
 
-  /* ------------------------ MAIN CONTENT ------------------------ */
   return (
     <div className="app-root">
       <header className="topbar app-topbar">
@@ -196,20 +247,32 @@ export default function App() {
         </button>
       </header>
 
+      {chatToast && (
+        <button className="app-chatToast" onClick={goToChatFromToast}>
+          <div>
+            <strong>{chatToast.title}</strong>
+            <p>{chatToast.message}</p>
+          </div>
+          <span>Open</span>
+        </button>
+      )}
+
       <main className="screen-center">
         {(() => {
           if (tab === "home") return <Home />;
-
           if (tab === "add") return <AddSong onAdded={() => setTab("home")} />;
-
-          if (tab === "chat") return <Chat user={user} />;
-
-          if (tab === "categories") {
+          if (tab === "chat") {
             return (
-              <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />
+              <Chat
+                user={user}
+                routeTarget={chatRouteTarget}
+                onClearRouteTarget={() => setChatRouteTarget(null)}
+              />
             );
           }
-
+          if (tab === "categories") {
+            return <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />;
+          }
           if (tab.startsWith("cat_")) {
             return (
               <CategoryPage
@@ -218,7 +281,6 @@ export default function App() {
               />
             );
           }
-
           if (tab === "lineups") {
             return (
               <LineUps
@@ -227,11 +289,7 @@ export default function App() {
               />
             );
           }
-
-          if (tab === "lineupsList") {
-            return <LineUpList onBack={() => setTab("profile")} />;
-          }
-
+          if (tab === "lineupsList") return <LineUpList onBack={() => setTab("profile")} />;
           if (tab.startsWith("lineup_")) {
             const lineupId = tab.replace("lineup_", "");
             return (
@@ -242,56 +300,33 @@ export default function App() {
               />
             );
           }
-
           if (tab.startsWith("editLineup_")) {
             const lineupId = tab.replace("editLineup_", "");
-            return (
-              <EditLineUp
-                id={lineupId}
-                onBack={() => setTab(`lineup_${lineupId}`)}
-              />
-            );
+            return <EditLineUp id={lineupId} onBack={() => setTab(`lineup_${lineupId}`)} />;
           }
-
           if (tab === "search") return <SearchFilters />;
-
           if (tab === "profile") {
             return (
               <div className="card app-profile">
                 <h1>Profile</h1>
-
                 <h4 className="muted app-profile__username">
-                  Username:{" "}
-                  {user.displayName ||
-                    localStorage.getItem("choirflow_username") ||
-                    "One Voice Tech"}
+                  Username: {user.displayName || localStorage.getItem("choirflow_username") || "One Voice Tech"}
                 </h4>
 
                 <div className="app-profile__actions">
-                  <button
-                    className="app-profile__actionBtn"
-                    onClick={() => setTab("lineups")}
-                  >
+                  <button className="app-profile__actionBtn" onClick={() => setTab("lineups")}>
                     <span>Create Line-Up</span>
                     <span className="app-profile__pill">New</span>
                   </button>
 
-                  <button
-                    className="app-profile__actionBtn"
-                    onClick={() => setTab("lineupsList")}
-                  >
+                  <button className="app-profile__actionBtn" onClick={() => setTab("lineupsList")}>
                     <span>View Saved Line-Ups</span>
                     <span className="app-profile__pill">List</span>
                   </button>
 
                   <button
                     className="app-profile__actionBtn"
-                    onClick={() =>
-                      window.open(
-                        "https://badrudavidportfolio.netlify.app/#contact",
-                        "_blank",
-                      )
-                    }
+                    onClick={() => window.open("https://badrudavidportfolio.netlify.app/#contact", "_blank")}
                   >
                     <span>Contact Support Centre</span>
                     <span className="app-profile__pill">Help</span>
@@ -314,25 +349,21 @@ export default function App() {
       </main>
 
       <nav className="bottom-nav">
-        <button
-          className={`nav-btn ${tab === "home" ? "is-active" : ""}`}
-          onClick={() => setTab("home")}
-        >
+        <button className={`nav-btn ${tab === "home" ? "is-active" : ""}`} onClick={() => setTab("home")}>
           <HomeIcon active={tab === "home"} />
         </button>
 
-        <button
-          className={`nav-btn ${tab === "add" ? "is-active" : ""}`}
-          onClick={() => setTab("add")}
-        >
+        <button className={`nav-btn ${tab === "add" ? "is-active" : ""}`} onClick={() => setTab("add")}>
           <AddIcon active={tab === "add"} />
         </button>
 
-        <button
-          className={`nav-btn ${tab === "chat" ? "is-active" : ""}`}
-          onClick={() => setTab("chat")}
-        >
-          <ChatIcon />
+        <button className={`nav-btn ${tab === "chat" ? "is-active" : ""}`} onClick={() => setTab("chat")}>
+          <ChatIcon className="nav-chatIcon" />
+          {showChatUnreadBadge && (
+            <span className="nav-chatUnreadBadge" aria-label={`${unreadTotalCount} unread messages`}>
+              {unreadTotalCount > 99 ? "99+" : unreadTotalCount}
+            </span>
+          )}
         </button>
 
         <button
@@ -342,10 +373,7 @@ export default function App() {
           <CategoryIcon active={tab === "categories"} />
         </button>
 
-        <button
-          className={`nav-btn ${tab === "profile" ? "is-active" : ""}`}
-          onClick={() => setTab("profile")}
-        >
+        <button className={`nav-btn ${tab === "profile" ? "is-active" : ""}`} onClick={() => setTab("profile")}>
           <ProfileIcon active={tab === "profile"} />
         </button>
       </nav>

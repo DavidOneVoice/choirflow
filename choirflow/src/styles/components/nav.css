@@ -30,6 +30,7 @@
   border: none;
   padding: 10px;
   cursor: pointer;
+  position: relative;
 }
 
 .bottom-nav .nav-btn.is-active {
@@ -51,4 +52,26 @@
 .bottom-nav .nav-btn.is-active svg {
   transform: translateY(-1px);
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.12));
+}
+
+.nav-chatIcon {
+  color: #f7fffb;
+}
+
+.nav-chatUnreadBadge {
+  position: absolute;
+  top: 4px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0c6a39;
+  font-size: 0.7rem;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
 }

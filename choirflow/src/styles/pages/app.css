@@ -59,6 +59,7 @@
   color: var(--brand);
   border: 1px solid rgba(28, 110, 63, 0.12);
 }
+
 .app-topbar {
   background: #1c6e3f;
   border-bottom: 1px solid var(--stroke);
@@ -66,4 +67,35 @@
 
 .app-topbar__iconBtn:active {
   transform: scale(0.96);
+}
+
+.app-chatToast {
+  margin: 8px 12px 0;
+  border: 1px solid rgba(28, 110, 63, 0.2);
+  background: linear-gradient(180deg, #ffffff, #f5fff9);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  box-shadow: 0 16px 34px rgba(10, 10, 10, 0.08);
+}
+
+.app-chatToast strong {
+  color: #123e25;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.app-chatToast p {
+  margin: 0;
+  color: #31533f;
+  font-size: 0.9rem;
+}
+
+.app-chatToast span {
+  color: #0d6b3a;
+  font-weight: 900;
 }
