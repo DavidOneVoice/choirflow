@@ -8,7 +8,6 @@
     transform var(--t-fast) var(--ease),
     filter var(--t-fast) var(--ease);
 }
-
 .btn:active {
   transform: scale(0.98);
 }

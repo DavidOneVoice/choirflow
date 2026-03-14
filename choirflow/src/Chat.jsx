@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { db } from "./firebase/firebase";
+import SendIcon from "@mui/icons-material/Send";
 import {
   addDoc,
   arrayUnion,
@@ -538,7 +539,7 @@ export default function Chat({ user }) {
                   className="btn primary"
                   onClick={sendMessage}
                 >
-                  Send
+                  <SendIcon />
                 </button>
               </div>
             </>
