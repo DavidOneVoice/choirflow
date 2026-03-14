@@ -6,14 +6,24 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useLineupRecordings } from "../../hooks/useLineupRecordings";
 import RecordingListReadOnly from "../../Components/lineup/RecordingListReadOnly";
 import { useLineupDetails } from "../../hooks/useLineupDetails";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import "./LineUpDetails.css";
 
 export default function LineUpDetails({ id, onBack, onEdit }) {
   const { lineup, loading } = useLineupDetails(id);
   const { recordings } = useLineupRecordings(id);
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   const deleteLineup = async () => {
-    if (!window.confirm("Delete this lineup permanently?")) return;
+    const shouldDelete = await confirm({
+      title: "Delete line-up",
+      message:
+        "Are you sure you want to delete this line-up permanently? This action cannot be undone.",
+      confirmText: "Yes, delete",
+      cancelText: "No",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
 
     try {
       await deleteDoc(doc(db, "users", auth.currentUser.uid, "lineups", id));
@@ -145,6 +155,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
           </button>
         </div>
       </footer>
+      {confirmDialog}
     </div>
   );
 }

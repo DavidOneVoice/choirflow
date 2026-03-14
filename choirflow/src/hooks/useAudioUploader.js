@@ -35,7 +35,7 @@ function getAudioDurationFromFile(file) {
   });
 }
 
-export function useAudioUploader(lineupId) {
+export function useAudioUploader(lineupId, confirmDialog) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
 
@@ -141,7 +141,6 @@ export function useAudioUploader(lineupId) {
 
     // Sequential upload is safer for phones + many users
     for (const f of audioFiles) {
-      // eslint-disable-next-line no-await-in-loop
       await uploadOne(f);
     }
 
@@ -162,7 +161,16 @@ export function useAudioUploader(lineupId) {
   // So we delete from Firestore (removes from UI). Later we’ll add a cloud function to delete in Cloudinary too.
   const deleteRecording = async (rec) => {
     if (!auth.currentUser) return alert("Not logged in");
-    if (!window.confirm("Delete this recording?")) return;
+    const shouldDelete = await (confirmDialog
+      ? confirmDialog({
+          title: "Delete recording",
+          message: "Are you sure you want to delete this recording?",
+          confirmText: "Yes, delete",
+          cancelText: "No",
+          tone: "danger",
+        })
+      : window.confirm("Delete this recording?"));
+    if (!shouldDelete) return;
 
     try {
       await deleteDoc(

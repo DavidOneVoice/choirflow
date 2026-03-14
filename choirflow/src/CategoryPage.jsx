@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useConfirmDialog } from "./hooks/useConfirmDialog";
 import "./styles/pages/category-page.css";
 import {
   collection,
@@ -24,6 +25,7 @@ export default function CategoryPage({ category, onBack }) {
     category: "",
     tier: "",
   });
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   /* ---------------- FETCH CATEGORY SONGS ---------------- */
   useEffect(() => {
@@ -78,7 +80,14 @@ export default function CategoryPage({ category, onBack }) {
 
   /* ---------------- DELETE SONG ---------------- */
   const removeSong = async (id) => {
-    if (!window.confirm("Delete this song?")) return;
+    const shouldDelete = await confirm({
+      title: "Delete song",
+      message: "Are you sure you want to delete this song?",
+      confirmText: "Yes, delete",
+      cancelText: "No",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
     if (!auth.currentUser) return;
 
     const ref = doc(db, "users", auth.currentUser.uid, "songs", id);
@@ -221,6 +230,7 @@ export default function CategoryPage({ category, onBack }) {
           );
         })}
       </div>
+      {confirmDialog}
     </div>
   );
 }

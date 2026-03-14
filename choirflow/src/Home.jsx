@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { db, auth } from "./firebase/firebase";
 import option1 from "./assets/option1.jpg";
 import SongItem from "./Components/SongItem";
+import { useConfirmDialog } from "./hooks/useConfirmDialog";
 import "./styles/pages/home.css";
 import {
   collection,
@@ -24,6 +25,7 @@ export default function Home() {
     category: "",
     tier: "",
   });
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   /* ---------------- FETCH SONGS ---------------- */
   useEffect(() => {
@@ -87,7 +89,14 @@ export default function Home() {
 
   /* ---------------- DELETE SONG ---------------- */
   const removeSong = async (id) => {
-    if (!window.confirm("Delete this song?")) return;
+    const shouldDelete = await confirm({
+      title: "Delete song",
+      message: "Are you sure you want to delete this song?",
+      confirmText: "Yes, delete",
+      cancelText: "No",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
     const ref = doc(db, "users", auth.currentUser.uid, "songs", id);
     await deleteDoc(ref);
   };
@@ -192,6 +201,7 @@ export default function Home() {
           ),
         )}
       </div>
+      {confirmDialog}
     </div>
   );
 }
