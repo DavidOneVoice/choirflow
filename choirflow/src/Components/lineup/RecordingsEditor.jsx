@@ -1,11 +1,13 @@
 import { useLineupRecordings } from "../../hooks/useLineupRecordings";
 import { useAudioUploader } from "../../hooks/useAudioUploader";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import UploadProgress from "./UploadProgress";
 import RecordingList from "./RecordingList";
 import "./RecordingsEditor.css";
 
 export default function RecordingsEditor({ lineupId }) {
   const { recordings } = useLineupRecordings(lineupId);
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   const {
     uploadProgress,
@@ -13,7 +15,7 @@ export default function RecordingsEditor({ lineupId }) {
     clearCompleted,
     deleteRecording,
     renameRecording,
-  } = useAudioUploader(lineupId);
+  } = useAudioUploader(lineupId, confirm);
 
   const handlePickFiles = (e) => {
     const files = e.target.files;
@@ -56,6 +58,7 @@ export default function RecordingsEditor({ lineupId }) {
           onRename={renameRecording}
         />
       </div>
+      {confirmDialog}
     </div>
   );
 }

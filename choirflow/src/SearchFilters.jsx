@@ -4,6 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TuneIcon from "@mui/icons-material/Tune";
 import CloseIcon from "@mui/icons-material/Close";
+import { useConfirmDialog } from "./hooks/useConfirmDialog";
 import "./styles/pages/search-filters.css";
 import {
   collection,
@@ -30,6 +31,7 @@ export default function SearchFilters() {
     category: "",
     tier: "",
   });
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   const allCategories = [
     "Worship",
@@ -142,7 +144,14 @@ export default function SearchFilters() {
 
   /* ---------------- DELETE SONG ---------------- */
   const removeSong = async (id) => {
-    if (!window.confirm("Delete this song?")) return;
+    const shouldDelete = await confirm({
+      title: "Delete song",
+      message: "Are you sure you want to delete this song?",
+      confirmText: "Yes, delete",
+      cancelText: "No",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
     if (!auth.currentUser) return;
 
     const ref = doc(db, "users", auth.currentUser.uid, "songs", id);
@@ -391,6 +400,7 @@ export default function SearchFilters() {
           })
         )}
       </div>
+      {confirmDialog}
     </div>
   );
 }

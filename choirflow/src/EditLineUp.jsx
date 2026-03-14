@@ -8,6 +8,7 @@ import { db, auth } from "./firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import RecordingsEditor from "./Components/lineup/RecordingsEditor";
 import MiniKeyboard from "./Components/music/MiniKeyboard";
+import { useConfirmDialog } from "./hooks/useConfirmDialog";
 import {
   getEditLineupDraftKey,
   saveDraft,
@@ -32,6 +33,7 @@ export default function EditLineUp({ id, onBack }) {
   const [dragPraiseIndex, setDragPraiseIndex] = useState(null);
 
   const [showKb, setShowKb] = useState(false);
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   const keysList = useMemo(
     () => ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"],
@@ -155,13 +157,27 @@ export default function EditLineUp({ id, onBack }) {
     });
   };
 
-  const removeWorship = (idx) => {
-    if (!window.confirm("Remove this worship song?")) return;
+  const removeWorship = async (idx) => {
+    const shouldDelete = await confirm({
+      title: "Remove worship song",
+      message: "Are you sure you want to remove this worship song?",
+      confirmText: "Yes, remove",
+      cancelText: "No",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
     setWorshipList((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const removePraise = (idx) => {
-    if (!window.confirm("Remove this praise song?")) return;
+  const removePraise = async (idx) => {
+    const shouldDelete = await confirm({
+      title: "Remove praise song",
+      message: "Are you sure you want to remove this praise song?",
+      confirmText: "Yes, remove",
+      cancelText: "No",
+      tone: "danger",
+    });
+    if (!shouldDelete) return;
     setPraiseList((prev) => prev.filter((_, i) => i !== idx));
   };
 
@@ -401,6 +417,8 @@ export default function EditLineUp({ id, onBack }) {
       >
         Save Changes
       </button>
+
+      {confirmDialog}
 
       {/* Keyboard Modal */}
       {showKb && (
