@@ -8,7 +8,9 @@
 .chat-page {
   width: 100%;
   max-width: 420px;
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
   padding: 16px;
   border-radius: 22px;
   background: linear-gradient(
@@ -19,7 +21,7 @@
   border: 1px solid rgba(28, 110, 63, 0.12);
   box-shadow: 0 20px 52px rgba(10, 10, 10, 0.08);
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -166,6 +168,7 @@
   gap: 18px;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 /* =========================
@@ -270,6 +273,7 @@
   gap: 12px;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .chat-paneHeader {
@@ -386,6 +390,7 @@
   gap: 10px;
   padding-top: 6px;
   margin-top: auto;
+  flex-shrink: 0;
 }
 
 .chat-composeRow .input {
