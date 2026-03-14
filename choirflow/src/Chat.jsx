@@ -44,6 +44,9 @@ export default function Chat({ user }) {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [userLoadError, setUserLoadError] = useState("");
+  const [chatLoadError, setChatLoadError] = useState("");
+  const [messageLoadError, setMessageLoadError] = useState("");
+  const [isUserDirectoryBlocked, setIsUserDirectoryBlocked] = useState(false);
 
   useEffect(() => {
     const q = query(
@@ -52,31 +55,46 @@ export default function Chat({ user }) {
       orderBy("updatedAt", "desc"),
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map((item) => {
-        const data = item.data();
-        const otherParticipantId = (data.participants || []).find(
-          (id) => id !== user.uid,
-        );
-        const profile = data.participantProfiles?.[otherParticipantId] || null;
-        const latestMessage = data.latestMessage || null;
-        const unread =
-          !!latestMessage &&
-          latestMessage.senderId !== user.uid &&
-          !(latestMessage.readBy || []).includes(user.uid);
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const docs = snapshot.docs.map((item) => {
+          const data = item.data();
+          const otherParticipantId = (data.participants || []).find(
+            (id) => id !== user.uid,
+          );
+          const profile = data.participantProfiles?.[otherParticipantId] || null;
+          const latestMessage = data.latestMessage || null;
+          const unread =
+            !!latestMessage &&
+            latestMessage.senderId !== user.uid &&
+            !(latestMessage.readBy || []).includes(user.uid);
 
-        return {
-          id: item.id,
-          unread,
-          profile,
-          participants: data.participants || [],
-          updatedAt: data.updatedAt,
-          latestMessage,
-        };
-      });
+          return {
+            id: item.id,
+            unread,
+            profile,
+            participants: data.participants || [],
+            updatedAt: data.updatedAt,
+            latestMessage,
+          };
+        });
 
-      setChatList(docs);
-    });
+        setChatLoadError("");
+        setChatList(docs);
+      },
+      (error) => {
+        if (error?.code === "permission-denied") {
+          setChatLoadError(
+            "Chat access is blocked by Firestore rules for this account.",
+          );
+          return;
+        }
+
+        setChatLoadError("Unable to load chats right now. Please try again.");
+        console.error("Failed to load chats", error);
+      },
+    );
 
     return () => unsubscribe();
   }, [user.uid]);
@@ -92,13 +110,28 @@ export default function Chat({ user }) {
       orderBy("createdAt", "asc"),
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const entries = snapshot.docs.map((item) => ({
-        id: item.id,
-        ...item.data(),
-      }));
-      setMessages(entries);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const entries = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        }));
+        setMessageLoadError("");
+        setMessages(entries);
+      },
+      (error) => {
+        if (error?.code === "permission-denied") {
+          setMessageLoadError(
+            "Message history is blocked by Firestore rules for this conversation.",
+          );
+          return;
+        }
+
+        setMessageLoadError("Unable to load messages right now. Please try again.");
+        console.error("Failed to load messages", error);
+      },
+    );
 
     return () => unsubscribe();
   }, [activeChat?.id]);
@@ -166,6 +199,7 @@ export default function Chat({ user }) {
       );
     } catch (error) {
       if (error?.code === "permission-denied") {
+        setIsUserDirectoryBlocked(true);
         setUserLoadError(
           "User directory is blocked by Firestore rules. Please contact support.",
         );
@@ -265,7 +299,11 @@ export default function Chat({ user }) {
           onChange={(event) => setSearchText(event.target.value)}
           onFocus={() => {
             setIsSearchActive(true);
-            if (!loadingUsers && (!allUsers.length || userLoadError)) {
+            if (
+              !loadingUsers &&
+              !isUserDirectoryBlocked &&
+              (!allUsers.length || userLoadError)
+            ) {
               loadUsers();
             }
           }}
@@ -318,6 +356,7 @@ export default function Chat({ user }) {
 
       <div className="chat-layout">
         <section className="chat-conversationList">
+          {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
           {filteredChats.length === 0 && (
             <p className="muted">No conversations yet. Search for a user above.</p>
           )}
@@ -358,6 +397,7 @@ export default function Chat({ user }) {
               </h3>
 
               <div className="chat-messagesList">
+                {!!messageLoadError && <p className="muted">{messageLoadError}</p>}
                 {messages.length === 0 && <p className="muted">No messages yet.</p>}
                 {messages.map((message) => (
                   <div
