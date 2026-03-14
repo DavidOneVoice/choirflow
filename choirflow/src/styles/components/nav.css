@@ -31,3 +31,24 @@
   padding: 10px;
   cursor: pointer;
 }
+
+.bottom-nav .nav-btn.is-active {
+  position: relative;
+}
+
+.bottom-nav .nav-btn.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.bottom-nav .nav-btn.is-active svg {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.12));
+}

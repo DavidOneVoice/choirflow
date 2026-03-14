@@ -6,16 +6,15 @@ import {
   arrayUnion,
   collection,
   doc,
-  getDoc,
   getDocs,
-  onSnapshot,
-  startAt,
-  endAt,
   limit,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
+  startAt,
+  endAt,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -36,6 +35,17 @@ function formatTime(timestamp) {
     .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function formatLastSeen(timestamp) {
+  if (!timestamp?.toDate) return "Offline";
+  const date = timestamp.toDate();
+  return `Last seen ${date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
 export default function Chat({ user }) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -51,7 +61,10 @@ export default function Chat({ user }) {
   const [messageLoadError, setMessageLoadError] = useState("");
   const [isUserDirectoryBlocked, setIsUserDirectoryBlocked] = useState(false);
 
+  /* -------------------- LOAD CHAT LIST -------------------- */
   useEffect(() => {
+    if (!user?.uid) return;
+
     const q = query(
       collection(db, "chats"),
       where("participants", "array-contains", user.uid),
@@ -69,6 +82,7 @@ export default function Chat({ user }) {
           const profile =
             data.participantProfiles?.[otherParticipantId] || null;
           const latestMessage = data.latestMessage || null;
+
           const unread =
             !!latestMessage &&
             latestMessage.senderId !== user.uid &&
@@ -95,14 +109,22 @@ export default function Chat({ user }) {
           return;
         }
 
+        if (error?.code === "failed-precondition") {
+          setChatLoadError(
+            "Chats need a Firestore index before they can load.",
+          );
+          return;
+        }
+
         setChatLoadError("Unable to load chats right now. Please try again.");
         console.error("Failed to load chats", error);
       },
     );
 
     return () => unsubscribe();
-  }, [user.uid]);
+  }, [user?.uid]);
 
+  /* -------------------- LOAD ACTIVE CHAT MESSAGES -------------------- */
   useEffect(() => {
     if (!activeChat?.id) {
       setMessages([]);
@@ -142,8 +164,9 @@ export default function Chat({ user }) {
     return () => unsubscribe();
   }, [activeChat?.id]);
 
+  /* -------------------- MARK UNREAD MESSAGES AS READ -------------------- */
   useEffect(() => {
-    if (!activeChat?.id || !messages.length) return;
+    if (!activeChat?.id || !messages.length || !user?.uid) return;
 
     const unreadIncoming = messages.filter(
       (message) =>
@@ -154,50 +177,59 @@ export default function Chat({ user }) {
     if (!unreadIncoming.length) return;
 
     const markAsRead = async () => {
-      await Promise.all(
-        unreadIncoming.map((message) =>
-          updateDoc(doc(db, "chats", activeChat.id, "messages", message.id), {
-            readBy: arrayUnion(user.uid),
-          }),
-        ),
-      );
+      try {
+        await Promise.all(
+          unreadIncoming.map((message) =>
+            updateDoc(doc(db, "chats", activeChat.id, "messages", message.id), {
+              readBy: arrayUnion(user.uid),
+            }),
+          ),
+        );
 
-      await updateDoc(doc(db, "chats", activeChat.id), {
-        "latestMessage.readBy": arrayUnion(user.uid),
-      });
+        await updateDoc(doc(db, "chats", activeChat.id), {
+          "latestMessage.readBy": arrayUnion(user.uid),
+        });
+      } catch (error) {
+        console.error("Failed to mark messages as read", error);
+      }
     };
 
     markAsRead();
-  }, [activeChat?.id, messages, user.uid]);
+  }, [activeChat?.id, messages, user?.uid]);
 
+  /* -------------------- FILTERED CHAT LIST -------------------- */
   const filteredChats = useMemo(() => {
     if (activeFilter === CHAT_FILTERS.unread) {
       return chatList.filter((item) => item.unread);
     }
-
     return chatList;
   }, [activeFilter, chatList]);
 
-  const searchResults = useMemo(() => {
-    const term = searchText.trim().toLowerCase();
-    const candidates = allUsers.filter((person) => person.uid !== user.uid);
-
-    if (!term) return candidates.slice(0, 8);
-
-    return candidates
-      .filter((person) => {
-        const username = (person.username || "").toLowerCase();
-        const email = (person.email || "").toLowerCase();
-        return username.includes(term) || email.includes(term);
-      })
-      .slice(0, 8);
-  }, [allUsers, searchText, user.uid]);
-
-  const loadUsers = async () => {
+  /* -------------------- LOAD USERS FOR SEARCH -------------------- */
+  const loadUsers = async (term = "") => {
     setLoadingUsers(true);
     setUserLoadError("");
+
     try {
-      const snapshot = await getDocs(collection(db, "users"));
+      const usersRef = collection(db, "users");
+      const normalized = term.trim().toLowerCase();
+
+      let q;
+
+      if (!normalized) {
+        q = query(usersRef, orderBy("username"), limit(10));
+      } else {
+        q = query(
+          usersRef,
+          orderBy("username"),
+          startAt(normalized),
+          endAt(normalized + "\uf8ff"),
+          limit(10),
+        );
+      }
+
+      const snapshot = await getDocs(q);
+
       setAllUsers(
         snapshot.docs.map((item) => ({
           uid: item.id,
@@ -223,52 +255,66 @@ export default function Chat({ user }) {
     loadUsers();
   }, []);
 
+  /* -------------------- SEARCH RESULTS -------------------- */
+  const searchResults = useMemo(() => {
+    const candidates = allUsers.filter((person) => person.uid !== user.uid);
+    return candidates.slice(0, 8);
+  }, [allUsers, user.uid]);
+
   const showSearchResults = isSearchActive || !!searchText.trim();
 
+  /* -------------------- OPEN / CREATE CHAT -------------------- */
   const openChatWithUser = async (targetUser) => {
-    const chatId = buildChatId(user.uid, targetUser.uid);
-    const chatRef = doc(db, "chats", chatId);
+    try {
+      const chatId = buildChatId(user.uid, targetUser.uid);
+      const chatRef = doc(db, "chats", chatId);
 
-    const me = {
-      uid: user.uid,
-      email: user.email || "",
-      username:
-        user.displayName ||
-        localStorage.getItem("choirflow_username") ||
-        "Unknown",
-      isOnline: true,
-    };
+      const me = {
+        uid: user.uid,
+        email: user.email || "",
+        username:
+          user.displayName ||
+          localStorage.getItem("choirflow_username") ||
+          user.email?.split("@")[0] ||
+          "Unknown",
+        isOnline: true,
+      };
 
-    const peer = {
-      uid: targetUser.uid,
-      email: targetUser.email || "",
-      username: targetUser.username || targetUser.email || "Unknown",
-      isOnline: !!targetUser.isOnline,
-      lastSeenAt: targetUser.lastSeenAt || null,
-    };
+      const peer = {
+        uid: targetUser.uid,
+        email: targetUser.email || "",
+        username: targetUser.username || targetUser.email || "Unknown",
+        isOnline: !!targetUser.isOnline,
+        lastSeenAt: targetUser.lastSeenAt || null,
+      };
 
-    await setDoc(
-      chatRef,
-      {
-        participants: [user.uid, targetUser.uid],
-        participantProfiles: {
-          [user.uid]: me,
-          [targetUser.uid]: peer,
+      await setDoc(
+        chatRef,
+        {
+          participants: [user.uid, targetUser.uid],
+          participantProfiles: {
+            [user.uid]: me,
+            [targetUser.uid]: peer,
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         },
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
+        { merge: true },
+      );
 
-    setActiveChat({
-      id: chatId,
-      profile: peer,
-    });
-    setSearchText("");
-    setIsSearchActive(false);
+      setActiveChat({
+        id: chatId,
+        profile: peer,
+      });
+      setSearchText("");
+      setIsSearchActive(false);
+    } catch (error) {
+      console.error("Failed to open chat", error);
+      alert("Unable to open chat right now.");
+    }
   };
 
+  /* -------------------- SEND MESSAGE -------------------- */
   const sendMessage = async () => {
     const text = draft.trim();
     if (!text || !activeChat?.id) return;
@@ -280,30 +326,25 @@ export default function Chat({ user }) {
       readBy: [user.uid],
     };
 
-    await addDoc(collection(db, "chats", activeChat.id, "messages"), message);
-    await updateDoc(doc(db, "chats", activeChat.id), {
-      latestMessage: {
-        text,
-        senderId: user.uid,
-        createdAt: serverTimestamp(),
-        readBy: [user.uid],
-      },
-      updatedAt: serverTimestamp(),
-    });
+    try {
+      await addDoc(collection(db, "chats", activeChat.id, "messages"), message);
 
-    setDraft("");
+      await updateDoc(doc(db, "chats", activeChat.id), {
+        latestMessage: {
+          text,
+          senderId: user.uid,
+          createdAt: serverTimestamp(),
+          readBy: [user.uid],
+        },
+        updatedAt: serverTimestamp(),
+      });
+
+      setDraft("");
+    } catch (error) {
+      console.error("Failed to send message", error);
+      alert("Unable to send message right now.");
+    }
   };
-
-  function formatLastSeen(timestamp) {
-    if (!timestamp?.toDate) return "Offline";
-    const date = timestamp.toDate();
-    return `Last seen ${date.toLocaleString([], {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
-  }
 
   return (
     <div className="chat-page card">
@@ -314,7 +355,13 @@ export default function Chat({ user }) {
           placeholder="Search by username or email"
           value={searchText}
           autoComplete="off"
-          onChange={(event) => setSearchText(event.target.value)}
+          onChange={(event) => {
+            const value = event.target.value;
+            setSearchText(value);
+            if (!isUserDirectoryBlocked) {
+              loadUsers(value);
+            }
+          }}
           onFocus={() => {
             setIsSearchActive(true);
             if (
@@ -322,11 +369,11 @@ export default function Chat({ user }) {
               !isUserDirectoryBlocked &&
               (!allUsers.length || userLoadError)
             ) {
-              loadUsers();
+              loadUsers(searchText);
             }
           }}
           onBlur={() => {
-            window.setTimeout(() => setIsSearchActive(false), 120);
+            window.setTimeout(() => setIsSearchActive(false), 250);
           }}
         />
       </div>
@@ -338,11 +385,16 @@ export default function Chat({ user }) {
           {!loadingUsers && !userLoadError && !searchResults.length && (
             <p className="muted">No users found.</p>
           )}
+
           {searchResults.map((person) => (
             <button
               key={person.uid}
+              type="button"
               className="chat-searchItem"
-              onClick={() => openChatWithUser(person)}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                openChatWithUser(person);
+              }}
             >
               <span className="chat-userName">
                 {person.username || person.email || "Unknown user"}
@@ -357,6 +409,7 @@ export default function Chat({ user }) {
 
       <div className="chat-filters">
         <button
+          type="button"
           className={`chat-filterBtn ${
             activeFilter === CHAT_FILTERS.all ? "is-active" : ""
           }`}
@@ -364,7 +417,9 @@ export default function Chat({ user }) {
         >
           All Messages
         </button>
+
         <button
+          type="button"
           className={`chat-filterBtn ${
             activeFilter === CHAT_FILTERS.unread ? "is-active" : ""
           }`}
@@ -377,6 +432,7 @@ export default function Chat({ user }) {
       <div className="chat-layout">
         <section className="chat-conversationList">
           {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
+
           {filteredChats.length === 0 && (
             <p className="muted">
               No conversations yet. Search for a user above.
@@ -386,6 +442,7 @@ export default function Chat({ user }) {
           {filteredChats.map((item) => (
             <button
               key={item.id}
+              type="button"
               className={`chat-conversationItem ${
                 activeChat?.id === item.id ? "is-active" : ""
               }`}
@@ -401,13 +458,15 @@ export default function Chat({ user }) {
                   {item.profile?.username || item.profile?.email || "Unknown"}
                 </p>
                 <p className="muted chat-userStatus">
-                  {item.profile?.isOnline ? "Online" : "Offline"}
+                  {item.profile?.isOnline
+                    ? "Online"
+                    : formatLastSeen(item.profile?.lastSeenAt)}
                 </p>
-
                 <p className="muted">
                   {item.latestMessage?.text || "Start chatting"}
                 </p>
               </div>
+
               {item.unread && (
                 <span className="chat-unreadDot" aria-hidden="true" />
               )}
@@ -418,7 +477,7 @@ export default function Chat({ user }) {
         <section className="chat-messagesPane">
           {!activeChat && (
             <p className="muted">
-              Select a chat from the left, or search a user above.
+              Select a chat from the list, or search a user above.
             </p>
           )}
 
@@ -444,6 +503,7 @@ export default function Chat({ user }) {
                 {messages.length === 0 && (
                   <p className="muted">No messages yet.</p>
                 )}
+
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -466,10 +526,18 @@ export default function Chat({ user }) {
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter") sendMessage();
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      sendMessage();
+                    }
                   }}
                 />
-                <button className="btn primary" onClick={sendMessage}>
+
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={sendMessage}
+                >
                   Send
                 </button>
               </div>

@@ -314,19 +314,38 @@ export default function App() {
       </main>
 
       <nav className="bottom-nav">
-        <button className="nav-btn" onClick={() => setTab("home")}>
+        <button
+          className={`nav-btn ${tab === "home" ? "is-active" : ""}`}
+          onClick={() => setTab("home")}
+        >
           <HomeIcon active={tab === "home"} />
         </button>
-        <button className="nav-btn" onClick={() => setTab("add")}>
+
+        <button
+          className={`nav-btn ${tab === "add" ? "is-active" : ""}`}
+          onClick={() => setTab("add")}
+        >
           <AddIcon active={tab === "add"} />
         </button>
-        <button className="nav-btn" onClick={() => setTab("chat")}>
+
+        <button
+          className={`nav-btn ${tab === "chat" ? "is-active" : ""}`}
+          onClick={() => setTab("chat")}
+        >
           <ChatIcon />
         </button>
-        <button className="nav-btn" onClick={() => setTab("categories")}>
+
+        <button
+          className={`nav-btn ${tab === "categories" ? "is-active" : ""}`}
+          onClick={() => setTab("categories")}
+        >
           <CategoryIcon active={tab === "categories"} />
         </button>
-        <button className="nav-btn" onClick={() => setTab("profile")}>
+
+        <button
+          className={`nav-btn ${tab === "profile" ? "is-active" : ""}`}
+          onClick={() => setTab("profile")}
+        >
           <ProfileIcon active={tab === "profile"} />
         </button>
       </nav>
