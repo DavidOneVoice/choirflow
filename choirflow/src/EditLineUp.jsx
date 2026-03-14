@@ -435,7 +435,6 @@ export default function EditLineUp({ id, onBack }) {
             <MiniKeyboard
               onPick={(note) => {
                 setKeySel(note);
-                setShowKb(false);
               }}
             />
           </div>

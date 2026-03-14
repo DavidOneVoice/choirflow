@@ -330,7 +330,6 @@ export default function LineUps({ onBack, onViewList }) {
             <MiniKeyboard
               onPick={(note) => {
                 setKeySel(note);
-                setShowKb(false);
               }}
             />
           </div>
