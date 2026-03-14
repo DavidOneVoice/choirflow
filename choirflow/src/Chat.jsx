@@ -165,7 +165,13 @@ export default function Chat({ user }) {
         })),
       );
     } catch (error) {
-      setUserLoadError("Unable to load users right now. Please try again.");
+      if (error?.code === "permission-denied") {
+        setUserLoadError(
+          "User directory is blocked by Firestore rules. Please contact support.",
+        );
+      } else {
+        setUserLoadError("Unable to load users right now. Please try again.");
+      }
       console.error("Failed to load user directory", error);
     } finally {
       setLoadingUsers(false);
@@ -257,7 +263,12 @@ export default function Chat({ user }) {
           placeholder="Search by username or email"
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
-          onFocus={() => setIsSearchActive(true)}
+          onFocus={() => {
+            setIsSearchActive(true);
+            if (!loadingUsers && (!allUsers.length || userLoadError)) {
+              loadUsers();
+            }
+          }}
           onBlur={() => {
             window.setTimeout(() => setIsSearchActive(false), 120);
           }}
