@@ -54,6 +54,27 @@ function formatLastSeen(timestamp) {
   })}`;
 }
 
+function formatMessageDate(timestamp) {
+  if (!timestamp?.toDate) return "";
+
+  const date = timestamp.toDate();
+  const today = new Date();
+  const yesterday = new Date();
+
+  yesterday.setDate(today.getDate() - 1);
+
+  const isToday = date.toDateString() === today.toDateString();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) return "Today";
+  if (isYesterday) return "Yesterday";
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -632,33 +653,49 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 {messages.length === 0 && (
                   <p className="muted">No messages yet.</p>
                 )}
+                let lastDate = "";
+                {messages.map((message) => {
+                  const currentDate = formatMessageDate(message.createdAt);
+                  const showDate = currentDate !== lastDate;
+                  lastDate = currentDate;
 
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`chat-messageGroup ${
-                      message.senderId === user.uid ? "is-me" : ""
-                    }`}
-                  >
-                    <div
-                      className={`chat-messageBubble ${
-                        message.senderId === user.uid ? "is-me" : ""
-                      }`}
-                    >
-                      {message.text}
-                    </div>
-
-                    <div className="chat-metaRow">
-                      <span>{formatTime(message.createdAt)}</span>
-
-                      {message.senderId === user.uid && (
-                        <span className="chat-tick">
-                          {message.readBy?.length > 1 ? "✓✓" : "✓"}
-                        </span>
+                  return (
+                    <div key={message.id}>
+                      {/* ✅ DATE SEPARATOR */}
+                      {showDate && (
+                        <div className="chat-dateDivider">{currentDate}</div>
                       )}
+
+                      <div
+                        className={`chat-messageGroup ${
+                          message.senderId === user.uid ? "is-me" : ""
+                        }`}
+                      >
+                        <div
+                          className={`chat-messageBubble ${
+                            message.senderId === user.uid ? "is-me" : ""
+                          }`}
+                        >
+                          {message.text}
+                        </div>
+
+                        <div
+                          className={`chat-metaRow ${
+                            message.senderId === user.uid ? "is-me" : ""
+                          }`}
+                        >
+                          <span>{formatTime(message.createdAt)}</span>
+
+                          {message.senderId === user.uid && (
+                            <span className="chat-tick">
+                              {message.readBy?.length > 1 ? "✓✓" : "✓"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
 

@@ -218,9 +218,18 @@
   font-size: 0.65rem;
   margin-top: 2px;
   display: flex;
-  justify-content: flex-end;
-  gap: 2px;
+
+  gap: 4px;
   color: #1c6e3f;
+}
+
+.chat-metaRow.is-me {
+  justify-content: flex-end;
+}
+
+/* received messages → left */
+.chat-messageGroup:not(.is-me) .chat-metaRow {
+  justify-content: flex-start;
 }
 
 .chat-tick {
@@ -296,4 +305,14 @@
   font-size: 0.8rem;
   color: #888;
   padding: 2px;
+}
+
+.chat-dateDivider {
+  align-self: center;
+  background: #e5e7eb;
+  color: #555;
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin: 10px 0;
 }
