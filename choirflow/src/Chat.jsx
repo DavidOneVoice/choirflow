@@ -54,24 +54,29 @@ function formatLastSeen(timestamp) {
   })}`;
 }
 
-function formatMessageDate(timestamp) {
+function getMessageDateLabel(timestamp) {
   if (!timestamp?.toDate) return "";
 
   const date = timestamp.toDate();
   const today = new Date();
-  const yesterday = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfMessageDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const dayDifference = Math.round(
+    (startOfToday.getTime() - startOfMessageDay.getTime()) / msPerDay,
+  );
 
-  yesterday.setDate(today.getDate() - 1);
-
-  const isToday = date.toDateString() === today.toDateString();
-  const isYesterday = date.toDateString() === yesterday.toDateString();
-
-  if (isToday) return "Today";
-  if (isYesterday) return "Yesterday";
+  if (dayDifference === 0) return "Today";
+  if (dayDifference === 1) return "Yesterday";
 
   return date.toLocaleDateString([], {
     month: "short",
     day: "numeric",
+    year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
   });
 }
 
@@ -474,6 +479,22 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     setComposeError("");
   };
 
+  const messageItems = useMemo(() => {
+    let previousDateLabel = "";
+
+    return messages.map((message) => {
+      const dateLabel = getMessageDateLabel(message.createdAt);
+      const showDateDivider = dateLabel && dateLabel !== previousDateLabel;
+      previousDateLabel = dateLabel || previousDateLabel;
+
+      return {
+        ...message,
+        dateLabel,
+        showDateDivider,
+      };
+    });
+  }, [messages]);
+
   const isChatOpen = !!activeChat;
 
   return (
@@ -653,49 +674,41 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 {messages.length === 0 && (
                   <p className="muted">No messages yet.</p>
                 )}
-                let lastDate = "";
-                {messages.map((message) => {
-                  const currentDate = formatMessageDate(message.createdAt);
-                  const showDate = currentDate !== lastDate;
-                  lastDate = currentDate;
+                {messageItems.map((message) => (
+                  <div key={message.id}>
+                    {message.showDateDivider && (
+                      <div className="chat-dateDivider">{message.dateLabel}</div>
+                    )}
 
-                  return (
-                    <div key={message.id}>
-                      {/* ✅ DATE SEPARATOR */}
-                      {showDate && (
-                        <div className="chat-dateDivider">{currentDate}</div>
-                      )}
-
+                    <div
+                      className={`chat-messageGroup ${
+                        message.senderId === user.uid ? "is-me" : ""
+                      }`}
+                    >
                       <div
-                        className={`chat-messageGroup ${
+                        className={`chat-messageBubble ${
                           message.senderId === user.uid ? "is-me" : ""
                         }`}
                       >
-                        <div
-                          className={`chat-messageBubble ${
-                            message.senderId === user.uid ? "is-me" : ""
-                          }`}
-                        >
-                          {message.text}
-                        </div>
+                        {message.text}
+                      </div>
 
-                        <div
-                          className={`chat-metaRow ${
-                            message.senderId === user.uid ? "is-me" : ""
-                          }`}
-                        >
-                          <span>{formatTime(message.createdAt)}</span>
+                      <div
+                        className={`chat-metaRow ${
+                          message.senderId === user.uid ? "is-me" : ""
+                        }`}
+                      >
+                        <span>{formatTime(message.createdAt)}</span>
 
-                          {message.senderId === user.uid && (
-                            <span className="chat-tick">
-                              {message.readBy?.length > 1 ? "✓✓" : "✓"}
-                            </span>
-                          )}
-                        </div>
+                        {message.senderId === user.uid && (
+                          <span className="chat-tick">
+                            {message.readBy?.length > 1 ? "✓✓" : "✓"}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
                 <div ref={messagesEndRef} />
               </div>
 
