@@ -521,72 +521,77 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
             <div className="chat-sidebarHeader">
               <span className="chat-eyebrow">Messages</span>
               <h2 className="chat-sidebarTitle">Conversations</h2>
-              <p className="chat-sidebarSubtitle">Search, manage, and respond with a clean WhatsApp-inspired workspace.</p>
+              <p className="chat-sidebarSubtitle">
+                Search, manage, and respond with a clean WhatsApp-inspired
+                workspace.
+              </p>
             </div>
             <div className="chat-searchBar">
-            <SearchIcon />
-            <input
-              className="input chat-searchInput"
-              placeholder="Search users (min. 2 letters)"
-              value={searchText}
-              autoComplete="off"
-              onChange={(event) => {
-                const value = event.target.value;
-                setSearchText(value);
+              <SearchIcon />
+              <input
+                className="input chat-searchInput"
+                placeholder="Search users (min. 2 letters)"
+                value={searchText}
+                autoComplete="off"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setSearchText(value);
 
-                window.clearTimeout(searchDebounceRef.current);
-                searchDebounceRef.current = window.setTimeout(() => {
-                  loadUsers(value);
-                }, SEARCH_DEBOUNCE_MS);
-              }}
-              onFocus={() => setIsSearchActive(true)}
-              onBlur={() => {
-                window.setTimeout(() => setIsSearchActive(false), 220);
-              }}
-            />
-          </div>
-
-          {showSearchResults && (
-            <div className="chat-searchResults">
-              {searchText.trim().length < 2 && (
-                <p className="muted">Type at least 2 letters to search.</p>
-              )}
-              {loadingUsers && <p className="muted">Loading users…</p>}
-              {!!userLoadError && <p className="muted">{userLoadError}</p>}
-              {!loadingUsers &&
-                !userLoadError &&
-                searchText.trim().length >= 2 &&
-                !searchResults.length && (
-                  <p className="muted">No users found.</p>
-                )}
-
-              {searchResults.map((person) => (
-                <button
-                  key={person.uid}
-                  type="button"
-                  className="chat-searchItem"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => openChatWithUser(person)}
-                >
-                  <div className="chat-avatar" aria-hidden="true">
-                    {getAvatarLabel(person)}
-                  </div>
-                  <div className="chat-searchMeta">
-                    <div className="chat-searchRow">
-                      <span className="chat-userName">{getDisplayName(person)}</span>
-                      <span
-                        className={`chat-searchDetail ${person.isOnline ? "is-online" : ""}`}
-                      >
-                        {person.isOnline
-                          ? "Online"
-                          : formatLastSeen(person.lastSeenAt)}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  window.clearTimeout(searchDebounceRef.current);
+                  searchDebounceRef.current = window.setTimeout(() => {
+                    loadUsers(value);
+                  }, SEARCH_DEBOUNCE_MS);
+                }}
+                onFocus={() => setIsSearchActive(true)}
+                onBlur={() => {
+                  window.setTimeout(() => setIsSearchActive(false), 220);
+                }}
+              />
             </div>
-          )}
+
+            {showSearchResults && (
+              <div className="chat-searchResults">
+                {searchText.trim().length < 2 && (
+                  <p className="muted">Type at least 2 letters to search.</p>
+                )}
+                {loadingUsers && <p className="muted">Loading users…</p>}
+                {!!userLoadError && <p className="muted">{userLoadError}</p>}
+                {!loadingUsers &&
+                  !userLoadError &&
+                  searchText.trim().length >= 2 &&
+                  !searchResults.length && (
+                    <p className="muted">No users found.</p>
+                  )}
+
+                {searchResults.map((person) => (
+                  <button
+                    key={person.uid}
+                    type="button"
+                    className="chat-searchItem"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => openChatWithUser(person)}
+                  >
+                    <div className="chat-avatar" aria-hidden="true">
+                      {getAvatarLabel(person)}
+                    </div>
+                    <div className="chat-searchMeta">
+                      <div className="chat-searchRow">
+                        <span className="chat-userName">
+                          {getDisplayName(person)}
+                        </span>
+                        <span
+                          className={`chat-searchDetail ${person.isOnline ? "is-online" : ""}`}
+                        >
+                          {person.isOnline
+                            ? "Online"
+                            : formatLastSeen(person.lastSeenAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="chat-filters">
               <button
@@ -611,56 +616,56 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
             </div>
 
             <section className="chat-conversationList">
-            {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
+              {!!chatLoadError && <p className="muted">{chatLoadError}</p>}
 
-            {filteredChats.length === 0 && (
-              <p className="muted chat-emptyConversation">
-                No conversations yet. Search for a user above.
-              </p>
-            )}
+              {filteredChats.length === 0 && (
+                <p className="muted chat-emptyConversation">
+                  No conversations yet. Search for a user above.
+                </p>
+              )}
 
-            {filteredChats.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`chat-conversationItem ${
-                  activeChat?.id === item.id ? "is-active" : ""
-                }`}
-                onClick={() =>
-                  setActiveChat({ id: item.id, profile: item.profile })
-                }
-              >
-                <div className="chat-avatar" aria-hidden="true">
-                  {getAvatarLabel(item.profile)}
-                </div>
-
-                <div className="chat-conversationBody">
-                  <div className="chat-userRow">
-                    <p className="chat-userName">
-                      {getDisplayName(item.profile)}
-                    </p>
-                    <span
-                      className={`chat-userStatus ${item.profile?.isOnline ? "is-online" : ""}`}
-                    >
-                      {item.profile?.isOnline ? "Online" : "Offline"}
-                    </span>
+              {filteredChats.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`chat-conversationItem ${
+                    activeChat?.id === item.id ? "is-active" : ""
+                  }`}
+                  onClick={() =>
+                    setActiveChat({ id: item.id, profile: item.profile })
+                  }
+                >
+                  <div className="chat-avatar" aria-hidden="true">
+                    {getAvatarLabel(item.profile)}
                   </div>
 
-                  <p className="chat-preview">
-                    {item.latestMessage?.text || "Start chatting"}
-                  </p>
-                </div>
+                  <div className="chat-conversationBody">
+                    <div className="chat-userRow">
+                      <p className="chat-userName">
+                        {getDisplayName(item.profile)}
+                      </p>
+                      <span
+                        className={`chat-userStatus ${item.profile?.isOnline ? "is-online" : ""}`}
+                      >
+                        {item.profile?.isOnline ? "Online" : "Offline"}
+                      </span>
+                    </div>
 
-                {item.unreadCount > 0 && (
-                  <span
-                    className="chat-unreadBadge"
-                    aria-label={`${item.unreadCount} unread`}
-                  >
-                    {item.unreadCount > 99 ? "99+" : item.unreadCount}
-                  </span>
-                )}
-              </button>
-            ))}
+                    <p className="chat-preview">
+                      {item.latestMessage?.text || "Start chatting"}
+                    </p>
+                  </div>
+
+                  {item.unreadCount > 0 && (
+                    <span
+                      className="chat-unreadBadge"
+                      aria-label={`${item.unreadCount} unread`}
+                    >
+                      {item.unreadCount > 99 ? "99+" : item.unreadCount}
+                    </span>
+                  )}
+                </button>
+              ))}
             </section>
           </aside>
         )}
@@ -674,7 +679,8 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 </div>
                 <h3>Your inbox, refined.</h3>
                 <p className="muted chat-emptyHint">
-                  Select a conversation from the left, or search for a choir member above to begin a polished, distraction-free chat.
+                  Select a conversation from the left, or search for a choir
+                  member above to begin a polished, distraction-free chat.
                 </p>
               </div>
             </div>
@@ -683,9 +689,6 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
           {activeChat && (
             <>
               <div className="chat-paneHeader">
-                <div className="chat-avatar" aria-hidden="true">
-                  {getAvatarLabel(activeChat.profile)}
-                </div>
                 <div className="chat-paneTitleRow">
                   <button
                     type="button"
@@ -695,6 +698,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   >
                     <KeyboardBackspaceIcon />
                   </button>
+                  <div className="chat-avatar" aria-hidden="true">
+                    {getAvatarLabel(activeChat.profile)}
+                  </div>
                   <h3 className="chat-paneTitle">
                     {getDisplayName(activeChat.profile)}
                   </h3>
@@ -704,7 +710,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     className={`chat-statusDot ${activeChat.profile?.isOnline ? "is-online" : ""}`}
                     aria-hidden="true"
                   />
-                  <p className="muted chat-userStatus">
+                  <p className="chat-userStatus">
                     {activeChat.profile?.isOnline
                       ? "Online"
                       : formatLastSeen(activeChat.profile?.lastSeenAt)}
@@ -761,39 +767,39 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
               <div className="chat-composeShell">
                 <div className="chat-composeRow">
-                <button
-                  type="button"
-                  className="chat-iconBtn"
-                  onClick={() => setShowLineupModal(true)}
-                  aria-label="Share lineup"
-                >
-                  <AttachFileIcon />
-                </button>
+                  <button
+                    type="button"
+                    className="chat-iconBtn"
+                    onClick={() => setShowLineupModal(true)}
+                    aria-label="Share lineup"
+                  >
+                    <AttachFileIcon />
+                  </button>
 
-                <input
-                  className="input chat-composeInput"
-                  placeholder="Type a message"
-                  value={draft}
-                  onChange={(event) => {
-                    setDraft(event.target.value);
-                    if (composeError) setComposeError("");
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                />
+                  <input
+                    className="input chat-composeInput"
+                    placeholder="Type a message"
+                    value={draft}
+                    onChange={(event) => {
+                      setDraft(event.target.value);
+                      if (composeError) setComposeError("");
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                  />
 
-                <button
-                  type="button"
-                  className="chat-sendBtn"
-                  onClick={sendMessage}
-                >
-                  <SendIcon />
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    className="chat-sendBtn"
+                    onClick={sendMessage}
+                  >
+                    <SendIcon />
+                  </button>
+                </div>
                 {!!composeError && (
                   <p className="muted chat-composeError">{composeError}</p>
                 )}
