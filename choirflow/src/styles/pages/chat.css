@@ -309,10 +309,9 @@
 
 .chat-dateDivider {
   align-self: center;
-  background: #e5e7eb;
+  font-weight: 700;
   color: #555;
+  text-align: center;
   font-size: 0.7rem;
-  padding: 4px 10px;
-  border-radius: 999px;
   margin: 10px 0;
 }

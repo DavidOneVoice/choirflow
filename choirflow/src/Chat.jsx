@@ -59,7 +59,11 @@ function getMessageDateLabel(timestamp) {
 
   const date = timestamp.toDate();
   const today = new Date();
-  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
   const startOfMessageDay = new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -677,7 +681,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 {messageItems.map((message) => (
                   <div key={message.id}>
                     {message.showDateDivider && (
-                      <div className="chat-dateDivider">{message.dateLabel}</div>
+                      <div className="chat-dateDivider">
+                        {message.dateLabel}
+                      </div>
                     )}
 
                     <div
