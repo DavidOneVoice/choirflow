@@ -144,7 +144,9 @@ export default function App() {
           totalUnread += unread;
 
           const latest = data.latestMessage;
-          const otherId = (data.participants || []).find((id) => id !== user.uid);
+          const otherId = (data.participants || []).find(
+            (id) => id !== user.uid,
+          );
           const profile = data.participantProfiles?.[otherId] || null;
           const createdAt = latest?.createdAt?.toMillis?.() || "no-time";
           const signature = latest
@@ -207,12 +209,18 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [tab]);
 
-  const showChatUnreadBadge = useMemo(() => unreadTotalCount > 0, [unreadTotalCount]);
+  const showChatUnreadBadge = useMemo(
+    () => unreadTotalCount > 0,
+    [unreadTotalCount],
+  );
 
   const goToChatFromToast = () => {
     setTab("chat");
     if (chatToast?.chatId) {
-      setChatRouteTarget({ chatId: chatToast.chatId, profile: chatToast.profile });
+      setChatRouteTarget({
+        chatId: chatToast.chatId,
+        profile: chatToast.profile,
+      });
     }
     setChatToast(null);
   };
@@ -271,7 +279,9 @@ export default function App() {
             );
           }
           if (tab === "categories") {
-            return <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />;
+            return (
+              <Categories onSelectCategory={(cat) => setTab(`cat_${cat}`)} />
+            );
           }
           if (tab.startsWith("cat_")) {
             return (
@@ -289,7 +299,8 @@ export default function App() {
               />
             );
           }
-          if (tab === "lineupsList") return <LineUpList onBack={() => setTab("profile")} />;
+          if (tab === "lineupsList")
+            return <LineUpList onBack={() => setTab("profile")} />;
           if (tab.startsWith("lineup_")) {
             const lineupId = tab.replace("lineup_", "");
             return (
@@ -302,7 +313,12 @@ export default function App() {
           }
           if (tab.startsWith("editLineup_")) {
             const lineupId = tab.replace("editLineup_", "");
-            return <EditLineUp id={lineupId} onBack={() => setTab(`lineup_${lineupId}`)} />;
+            return (
+              <EditLineUp
+                id={lineupId}
+                onBack={() => setTab(`lineup_${lineupId}`)}
+              />
+            );
           }
           if (tab === "search") return <SearchFilters />;
           if (tab === "profile") {
@@ -310,23 +326,37 @@ export default function App() {
               <div className="card app-profile">
                 <h1>Profile</h1>
                 <h4 className="muted app-profile__username">
-                  Username: {user.displayName || localStorage.getItem("choirflow_username") || "One Voice Tech"}
+                  Username:{" "}
+                  {user.displayName ||
+                    localStorage.getItem("choirflow_username") ||
+                    "One Voice Tech"}
                 </h4>
 
                 <div className="app-profile__actions">
-                  <button className="app-profile__actionBtn" onClick={() => setTab("lineups")}>
+                  <button
+                    className="app-profile__actionBtn"
+                    onClick={() => setTab("lineups")}
+                  >
                     <span>Create Line-Up</span>
                     <span className="app-profile__pill">New</span>
                   </button>
 
-                  <button className="app-profile__actionBtn" onClick={() => setTab("lineupsList")}>
+                  <button
+                    className="app-profile__actionBtn"
+                    onClick={() => setTab("lineupsList")}
+                  >
                     <span>View Saved Line-Ups</span>
                     <span className="app-profile__pill">List</span>
                   </button>
 
                   <button
                     className="app-profile__actionBtn"
-                    onClick={() => window.open("https://badrudavidportfolio.netlify.app/#contact", "_blank")}
+                    onClick={() =>
+                      window.open(
+                        "https://badrudavidportfolio.netlify.app/#contact",
+                        "_blank",
+                      )
+                    }
                   >
                     <span>Contact Support Centre</span>
                     <span className="app-profile__pill">Help</span>
@@ -349,18 +379,30 @@ export default function App() {
       </main>
 
       <nav className="bottom-nav">
-        <button className={`nav-btn ${tab === "home" ? "is-active" : ""}`} onClick={() => setTab("home")}>
+        <button
+          className={`nav-btn ${tab === "home" ? "is-active" : ""}`}
+          onClick={() => setTab("home")}
+        >
           <HomeIcon active={tab === "home"} />
         </button>
 
-        <button className={`nav-btn ${tab === "add" ? "is-active" : ""}`} onClick={() => setTab("add")}>
+        <button
+          className={`nav-btn ${tab === "add" ? "is-active" : ""}`}
+          onClick={() => setTab("add")}
+        >
           <AddIcon active={tab === "add"} />
         </button>
 
-        <button className={`nav-btn ${tab === "chat" ? "is-active" : ""}`} onClick={() => setTab("chat")}>
+        <button
+          className={`nav-btn ${tab === "chat" ? "is-active" : ""}`}
+          onClick={() => setTab("chat")}
+        >
           <ChatIcon className="nav-chatIcon" />
           {showChatUnreadBadge && (
-            <span className="nav-chatUnreadBadge" aria-label={`${unreadTotalCount} unread messages`}>
+            <span
+              className="nav-chatUnreadBadge"
+              aria-label={`${unreadTotalCount} unread messages`}
+            >
               {unreadTotalCount > 99 ? "99+" : unreadTotalCount}
             </span>
           )}
@@ -373,7 +415,10 @@ export default function App() {
           <CategoryIcon active={tab === "categories"} />
         </button>
 
-        <button className={`nav-btn ${tab === "profile" ? "is-active" : ""}`} onClick={() => setTab("profile")}>
+        <button
+          className={`nav-btn ${tab === "profile" ? "is-active" : ""}`}
+          onClick={() => setTab("profile")}
+        >
           <ProfileIcon active={tab === "profile"} />
         </button>
       </nav>

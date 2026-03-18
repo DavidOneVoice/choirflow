@@ -3,6 +3,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+
 import {
   addDoc,
   arrayUnion,
@@ -98,7 +99,8 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
           const otherParticipantId = (data.participants || []).find(
             (id) => id !== user.uid,
           );
-          const profile = data.participantProfiles?.[otherParticipantId] || null;
+          const profile =
+            data.participantProfiles?.[otherParticipantId] || null;
           const unreadCount = Number(data.unreadCounts?.[user.uid] || 0);
 
           return {
@@ -212,7 +214,10 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
   useEffect(() => {
     if (!activeChat?.id) return;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
   }, [messages, activeChat?.id]);
 
   useEffect(() => {
@@ -268,7 +273,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     if (!latest?.profile) return;
 
     setActiveChat((prev) =>
-      prev ? { ...prev, profile: { ...prev.profile, ...latest.profile } } : prev,
+      prev
+        ? { ...prev, profile: { ...prev.profile, ...latest.profile } }
+        : prev,
     );
   }, [chatList, activeChat?.id]);
 
@@ -485,7 +492,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               {!loadingUsers &&
                 !userLoadError &&
                 searchText.trim().length >= 2 &&
-                !searchResults.length && <p className="muted">No users found.</p>}
+                !searchResults.length && (
+                  <p className="muted">No users found.</p>
+                )}
 
               {searchResults.map((person) => (
                 <button
@@ -498,8 +507,10 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   <span className="chat-userName">
                     {person.username || person.email || "Unknown user"}
                   </span>
-                  <span className="muted">
-                    {person.isOnline ? "Online" : formatLastSeen(person.lastSeenAt)}
+                  <span className="muted" style={{ marginBottom: "4rem" }}>
+                    {person.isOnline
+                      ? "Online"
+                      : formatLastSeen(person.lastSeenAt)}
                   </span>
                 </button>
               ))}
@@ -548,22 +559,32 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 className={`chat-conversationItem ${
                   activeChat?.id === item.id ? "is-active" : ""
                 }`}
-                onClick={() => setActiveChat({ id: item.id, profile: item.profile })}
+                onClick={() =>
+                  setActiveChat({ id: item.id, profile: item.profile })
+                }
               >
                 <div className="chat-conversationBody">
-                  <p className="chat-userName">
-                    {item.profile?.username || item.profile?.email || "Unknown"}
+                  <div className="chat-userRow">
+                    <p className="chat-userName">
+                      {item.profile?.username ||
+                        item.profile?.email ||
+                        "Unknown"}
+                    </p>
+                    <span className="chat-userStatus">
+                      {item.profile?.isOnline ? "Online" : "Offline"}
+                    </span>
+                  </div>
+
+                  <p className="chat-preview">
+                    {item.latestMessage?.text || "Start chatting"}
                   </p>
-                  <p className="muted chat-userStatus">
-                    {item.profile?.isOnline
-                      ? "Online"
-                      : formatLastSeen(item.profile?.lastSeenAt)}
-                  </p>
-                  <p className="muted">{item.latestMessage?.text || "Start chatting"}</p>
                 </div>
 
                 {item.unreadCount > 0 && (
-                  <span className="chat-unreadBadge" aria-label={`${item.unreadCount} unread`}>
+                  <span
+                    className="chat-unreadBadge"
+                    aria-label={`${item.unreadCount} unread`}
+                  >
                     {item.unreadCount > 99 ? "99+" : item.unreadCount}
                   </span>
                 )}
@@ -592,7 +613,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     <KeyboardBackspaceIcon />
                   </button>
                   <h3 className="chat-paneTitle">
-                    {activeChat.profile?.username || activeChat.profile?.email || "Chat"}
+                    {activeChat.profile?.username ||
+                      activeChat.profile?.email ||
+                      "Chat"}
                   </h3>
                 </div>
                 <p className="muted chat-userStatus">
@@ -603,18 +626,37 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               </div>
 
               <div className="chat-messagesList">
-                {!!messageLoadError && <p className="muted">{messageLoadError}</p>}
-                {messages.length === 0 && <p className="muted">No messages yet.</p>}
+                {!!messageLoadError && (
+                  <p className="muted">{messageLoadError}</p>
+                )}
+                {messages.length === 0 && (
+                  <p className="muted">No messages yet.</p>
+                )}
 
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`chat-messageBubble ${
+                    className={`chat-messageGroup ${
                       message.senderId === user.uid ? "is-me" : ""
                     }`}
                   >
-                    <p>{message.text}</p>
-                    <span className="muted chat-time">{formatTime(message.createdAt)}</span>
+                    <div
+                      className={`chat-messageBubble ${
+                        message.senderId === user.uid ? "is-me" : ""
+                      }`}
+                    >
+                      {message.text}
+                    </div>
+
+                    <div className="chat-metaRow">
+                      <span>{formatTime(message.createdAt)}</span>
+
+                      {message.senderId === user.uid && (
+                        <span className="chat-tick">
+                          {message.readBy?.length > 1 ? "✓✓" : "✓"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
@@ -623,7 +665,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               <div className="chat-composeRow">
                 <button
                   type="button"
-                  className="btn ghost chat-attachBtn"
+                  className="btn primary"
                   onClick={() => setShowLineupModal(true)}
                   aria-label="Share lineup"
                 >
@@ -646,11 +688,17 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   }}
                 />
 
-                <button type="button" className="btn primary" onClick={sendMessage}>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={sendMessage}
+                >
                   <SendIcon />
                 </button>
               </div>
-              {!!composeError && <p className="muted chat-composeError">{composeError}</p>}
+              {!!composeError && (
+                <p className="muted chat-composeError">{composeError}</p>
+              )}
             </>
           )}
         </section>
@@ -661,9 +709,13 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
           <div className="chat-modalCard">
             <h3>Line-up sharing is coming soon</h3>
             <p className="muted">
-              We&apos;re finalizing secure line-up sharing in chat. Setup is in progress.
+              We&apos;re finalizing secure line-up sharing in chat. Setup is in
+              progress.
             </p>
-            <button className="btn primary" onClick={() => setShowLineupModal(false)}>
+            <button
+              className="btn primary"
+              onClick={() => setShowLineupModal(false)}
+            >
               Got it
             </button>
           </div>
