@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import AdminAnnouncements, { ADMIN_UID } from "./AdminAnnouncements.jsx";
 import logo from "./assets/logo.png";
 import Auth from "./Auth.jsx";
 import { onAuthStateChanged } from "firebase/auth";
@@ -45,6 +46,7 @@ export default function App() {
   const [unreadTotalCount, setUnreadTotalCount] = useState(0);
   const [chatRouteTarget, setChatRouteTarget] = useState(null);
   const [chatToast, setChatToast] = useState(null);
+  const isAdminRoute = window.location.pathname === "/admin-announcements";
   const hasShownInitialUnreadToast = useRef(false);
   const latestChatSignaturesRef = useRef(new Map());
 
@@ -239,6 +241,16 @@ export default function App() {
   }
 
   if (!user) return <Auth onAuthSuccess={() => {}} />;
+
+  if (isAdminRoute) {
+    return (
+      <div className="app-root app-adminRoute">
+        <main className="screen-center">
+          <AdminAnnouncements user={user} />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app-root">
