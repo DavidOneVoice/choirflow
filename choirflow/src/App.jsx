@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import AdminAnnouncements, { ADMIN_UID } from "./AdminAnnouncements.jsx";
+import { useEffect, useMemo, useRef, useState } from "react";
+import AdminAnnouncements from "./AdminAnnouncements.jsx";
 import logo from "./assets/logo.png";
 import Auth from "./Auth.jsx";
 import { onAuthStateChanged } from "firebase/auth";
@@ -46,9 +46,17 @@ export default function App() {
   const [unreadTotalCount, setUnreadTotalCount] = useState(0);
   const [chatRouteTarget, setChatRouteTarget] = useState(null);
   const [chatToast, setChatToast] = useState(null);
-  const isAdminRoute = window.location.pathname === "/admin-announcements";
+  const [pathname, setPathname] = useState(window.location.pathname);
+  const isAdminRoute = pathname === "/admin-announcements";
   const hasShownInitialUnreadToast = useRef(false);
   const latestChatSignaturesRef = useRef(new Map());
+
+
+  useEffect(() => {
+    const handlePopState = () => setPathname(window.location.pathname);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -240,7 +248,14 @@ export default function App() {
     );
   }
 
-  if (!user) return <Auth onAuthSuccess={() => {}} />;
+  if (!user) {
+    if (isAdminRoute && window.location.pathname !== "/") {
+      window.history.replaceState({}, "", "/");
+      setPathname("/");
+    }
+
+    return <Auth onAuthSuccess={() => {}} />;
+  }
 
   if (isAdminRoute) {
     return (

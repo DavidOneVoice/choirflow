@@ -103,54 +103,127 @@
 
 .app-adminRoute {
   min-height: 100vh;
+  padding: 24px 16px;
+}
+
+.admin-announcements-shell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .admin-announcements {
   width: min(100%, 720px);
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 245, 0.96));
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.12);
 }
 
 .admin-announcements__header {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.5rem;
+}
+
+.admin-announcements__eyebrow {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #0f6a3a;
+}
+
+.admin-announcements__subtitle {
+  margin: 0;
 }
 
 .admin-announcements__form {
   display: grid;
-  gap: 0.85rem;
+  gap: 1rem;
+}
+
+.admin-announcements__field {
+  display: grid;
+  gap: 0.55rem;
 }
 
 .admin-announcements__label {
-  font-weight: 600;
+  font-weight: 700;
+  color: #183f28;
+}
+
+.admin-announcements__input.input,
+.admin-announcements__textarea {
+  margin-bottom: 0;
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
 .admin-announcements__textarea {
-  width: 100%;
   min-height: 180px;
   resize: vertical;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.04);
-  color: inherit;
-  padding: 1rem;
+  padding: 16px 18px;
   font: inherit;
+  color: #132218;
 }
 
+.admin-announcements__input.input:focus,
 .admin-announcements__textarea:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.24);
-  outline-offset: 2px;
+  outline: none;
+  border-color: rgba(28, 110, 63, 0.35);
+  box-shadow: 0 0 0 4px rgba(28, 110, 63, 0.12);
 }
 
-.admin-announcements__button {
-  width: fit-content;
+.admin-announcements__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-announcements__button.btn.primary {
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 18px 32px rgba(28, 110, 63, 0.2);
 }
 
 .admin-announcements__feedback {
   margin: 0;
-  color: var(--color-text-muted, rgba(255, 255, 255, 0.72));
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 600;
 }
 
-.admin-announcements--denied {
-  text-align: center;
+.admin-announcements__feedback--success {
+  background: rgba(15, 138, 71, 0.12);
+  color: #0b7a3e;
+}
+
+.admin-announcements__feedback--error {
+  background: rgba(180, 35, 24, 0.1);
+  color: #b42318;
+}
+
+@media (max-width: 640px) {
+  .app-adminRoute {
+    padding: 18px 12px;
+  }
+
+  .admin-announcements {
+    padding: 22px 18px;
+    border-radius: 22px;
+  }
+
+  .admin-announcements__actions {
+    justify-content: stretch;
+  }
+
+  .admin-announcements__button.btn.primary {
+    width: 100%;
+  }
 }
