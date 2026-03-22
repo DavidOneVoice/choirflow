@@ -96,6 +96,26 @@ function getMessageDateLabel(timestamp) {
   });
 }
 
+function formatAnnouncementDate(timestamp) {
+  if (!timestamp?.toDate) return "";
+
+  const date = timestamp.toDate();
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const dayDifference = Math.round((startOfToday.getTime() - startOfDate.getTime()) / msPerDay);
+
+  if (dayDifference === 0) return "Today";
+  if (dayDifference === 1) return "Yesterday";
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -104,6 +124,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
+  const [announcements, setAnnouncements] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [userLoadError, setUserLoadError] = useState("");
@@ -123,6 +144,31 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
   const showSearchResults =
     isSearchActive || (!!searchText.trim() && searchText.trim().length >= 2);
+
+
+  useEffect(() => {
+    const announcementsQuery = query(
+      collection(db, "announcements"),
+      where("isActive", "==", true),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      announcementsQuery,
+      (snapshot) => {
+        const entries = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        }));
+        setAnnouncements(entries);
+      },
+      (error) => {
+        console.error("Failed to load announcements", error);
+      },
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -719,6 +765,13 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               </div>
 
               <div className="chat-messagesList">
+              {announcements.map((announcement) => (
+                <div key={announcement.id} className="announcement-card">
+                  <h4>{announcement.title}</h4>
+                  <p>{announcement.message}</p>
+                  <span>{formatAnnouncementDate(announcement.createdAt)}</span>
+                </div>
+              ))}
                 {!!messageLoadError && (
                   <p className="muted">{messageLoadError}</p>
                 )}
