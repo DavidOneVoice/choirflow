@@ -1,16 +1,99 @@
-import { useMemo, useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useEffect, useMemo, useState } from "react";
+import { getIdTokenResult } from "firebase/auth";
+import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase/firebase";
+
+function hasAdminAccess(userProfile, tokenClaims) {
+  if (tokenClaims?.admin === true) return true;
+
+  const role = userProfile?.role;
+  if (typeof role === "string" && role.toLowerCase() === "admin") return true;
+
+  if (userProfile?.isAdmin === true || userProfile?.admin === true) return true;
+
+  const roles = userProfile?.roles;
+  if (Array.isArray(roles)) {
+    return roles.some((entry) => String(entry).toLowerCase() === "admin");
+  }
+
+  if (roles && typeof roles === "object") {
+    return Object.entries(roles).some(
+      ([key, value]) => key.toLowerCase() === "admin" && value === true,
+    );
+  }
+
+  return false;
+}
+
+function buildPermissionErrorMessage(error) {
+  if (error?.code === "permission-denied") {
+    return "Your account does not currently have announcement publish permissions in Firestore. Ask an administrator to add the admin role or custom admin claim for this account, then sign out and back in.";
+  }
+
+  return error?.message || "Unable to send announcement right now.";
+}
 
 export default function AdminAnnouncements({ user }) {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [feedback, setFeedback] = useState({ type: "", text: "" });
+  const [adminStatus, setAdminStatus] = useState("checking");
 
   const trimmedTitle = useMemo(() => title.trim(), [title]);
   const trimmedMessage = useMemo(() => message.trim(), [message]);
-  const canSubmit = !!user?.uid && !!trimmedTitle && !!trimmedMessage && !isSending;
+  const canPublish = adminStatus === "allowed";
+  const canSubmit = canPublish && !!trimmedTitle && !!trimmedMessage && !isSending;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const resolveAdminAccess = async () => {
+      if (!user?.uid) {
+        if (isMounted) setAdminStatus("denied");
+        return;
+      }
+
+      setAdminStatus("checking");
+
+      try {
+        const [tokenResult, userProfileSnap] = await Promise.all([
+          getIdTokenResult(user),
+          getDoc(doc(db, "users", user.uid)),
+        ]);
+
+        const userProfile = userProfileSnap.exists() ? userProfileSnap.data() : null;
+        const isAdmin = hasAdminAccess(userProfile, tokenResult.claims);
+
+        if (!isMounted) return;
+
+        setAdminStatus(isAdmin ? "allowed" : "denied");
+
+        if (!isAdmin) {
+          setFeedback({
+            type: "error",
+            text: "This signed-in account is missing the admin role required to publish announcements.",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to resolve admin announcement access", error);
+
+        if (!isMounted) return;
+
+        setAdminStatus("error");
+        setFeedback({
+          type: "error",
+          text: "We could not verify announcement permissions for this account. Please refresh and try again.",
+        });
+      }
+    };
+
+    resolveAdminAccess();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -39,7 +122,7 @@ export default function AdminAnnouncements({ user }) {
       console.error("Failed to create announcement", error);
       setFeedback({
         type: "error",
-        text: error?.message || "Unable to send announcement right now.",
+        text: buildPermissionErrorMessage(error),
       });
     } finally {
       setIsSending(false);
@@ -69,9 +152,12 @@ export default function AdminAnnouncements({ user }) {
               maxLength={120}
               onChange={(event) => {
                 setTitle(event.target.value);
-                if (feedback.text) setFeedback({ type: "", text: "" });
+                if (feedback.text && adminStatus === "allowed") {
+                  setFeedback({ type: "", text: "" });
+                }
               }}
               placeholder="Sunday rehearsal update"
+              disabled={!canPublish}
             />
           </label>
 
@@ -83,9 +169,12 @@ export default function AdminAnnouncements({ user }) {
               value={message}
               onChange={(event) => {
                 setMessage(event.target.value);
-                if (feedback.text) setFeedback({ type: "", text: "" });
+                if (feedback.text && adminStatus === "allowed") {
+                  setFeedback({ type: "", text: "" });
+                }
               }}
               placeholder="Share the latest choir-wide update with everyone..."
+              disabled={!canPublish}
             />
           </label>
 
@@ -95,7 +184,11 @@ export default function AdminAnnouncements({ user }) {
               className="btn primary admin-announcements__button"
               disabled={!canSubmit}
             >
-              {isSending ? "Sending announcement..." : "Send announcement"}
+              {isSending
+                ? "Sending announcement..."
+                : adminStatus === "checking"
+                  ? "Checking permissions..."
+                  : "Send announcement"}
             </button>
           </div>
 
