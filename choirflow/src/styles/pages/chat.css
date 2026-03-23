@@ -401,6 +401,14 @@
   opacity: 0.8;
 }
 
+.chat-conversationTime {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #708078;
+  align-self: flex-start;
+  padding-top: 2px;
+}
+
 .chat-dateDivider {
   align-self: center;
   text-align: center;
@@ -458,6 +466,10 @@
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(16px);
+}
+
+.chat-composeShell--disabled {
+  padding: 16px 18px;
 }
 
 .chat-composeRow {

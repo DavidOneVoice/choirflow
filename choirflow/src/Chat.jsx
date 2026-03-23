@@ -31,6 +31,7 @@ const CHAT_FILTERS = {
   unread: "unread",
 };
 
+const ANNOUNCEMENTS_CHAT_ID = "__announcements__";
 const SEARCH_DEBOUNCE_MS = 220;
 
 function getDisplayName(profile) {
@@ -116,6 +117,26 @@ function formatAnnouncementDate(timestamp) {
   });
 }
 
+function formatConversationTimestamp(timestamp) {
+  if (!timestamp?.toDate) return "";
+
+  const date = timestamp.toDate();
+  const now = new Date();
+  const isSameDay =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  if (isSameDay) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -134,13 +155,40 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   const [showLineupModal, setShowLineupModal] = useState(false);
   const messagesEndRef = useRef(null);
   const searchDebounceRef = useRef(null);
+  const announcementsChat = useMemo(() => {
+    if (!announcements.length) return null;
+
+    const latestAnnouncement = announcements[0];
+
+    return {
+      id: ANNOUNCEMENTS_CHAT_ID,
+      type: "announcement",
+      unreadCount: 0,
+      profile: {
+        uid: ANNOUNCEMENTS_CHAT_ID,
+        username: "Announcements",
+        email: "",
+        isOnline: true,
+      },
+      updatedAt: latestAnnouncement.createdAt || null,
+      latestMessage: {
+        text: latestAnnouncement.message,
+        createdAt: latestAnnouncement.createdAt || null,
+      },
+    };
+  }, [announcements]);
 
   const filteredChats = useMemo(() => {
+    const items =
+      announcementsChat && activeFilter === CHAT_FILTERS.all
+        ? [announcementsChat, ...chatList]
+        : chatList;
+
     if (activeFilter === CHAT_FILTERS.unread) {
-      return chatList.filter((item) => item.unreadCount > 0);
+      return items.filter((item) => item.unreadCount > 0);
     }
-    return chatList;
-  }, [activeFilter, chatList]);
+    return items;
+  }, [activeFilter, announcementsChat, chatList]);
 
   const showSearchResults =
     isSearchActive || (!!searchText.trim() && searchText.trim().length >= 2);
@@ -558,6 +606,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   }, [messages]);
 
   const isChatOpen = !!activeChat;
+  const isAnnouncementChat = activeChat?.id === ANNOUNCEMENTS_CHAT_ID;
 
   return (
     <div className="chat-page">
@@ -693,7 +742,11 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                       <span
                         className={`chat-userStatus ${item.profile?.isOnline ? "is-online" : ""}`}
                       >
-                        {item.profile?.isOnline ? "Online" : "Offline"}
+                        {item.type === "announcement"
+                          ? "Read only"
+                          : item.profile?.isOnline
+                            ? "Online"
+                            : "Offline"}
                       </span>
                     </div>
 
@@ -701,6 +754,12 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                       {item.latestMessage?.text || "Start chatting"}
                     </p>
                   </div>
+
+                  <span className="chat-conversationTime">
+                    {formatConversationTimestamp(
+                      item.latestMessage?.createdAt || item.updatedAt,
+                    )}
+                  </span>
 
                   {item.unreadCount > 0 && (
                     <span
@@ -757,7 +816,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     aria-hidden="true"
                   />
                   <p className="chat-userStatus">
-                    {activeChat.profile?.isOnline
+                    {isAnnouncementChat
+                      ? "Read-only broadcast feed"
+                      : activeChat.profile?.isOnline
                       ? "Online"
                       : formatLastSeen(activeChat.profile?.lastSeenAt)}
                   </p>
@@ -765,20 +826,22 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               </div>
 
               <div className="chat-messagesList">
-              {announcements.map((announcement) => (
-                <div key={announcement.id} className="announcement-card">
-                  <h4>{announcement.title}</h4>
-                  <p>{announcement.message}</p>
-                  <span>{formatAnnouncementDate(announcement.createdAt)}</span>
-                </div>
-              ))}
+                {isAnnouncementChat &&
+                  announcements.map((announcement) => (
+                    <div key={announcement.id} className="announcement-card">
+                      <h4>{announcement.title}</h4>
+                      <p>{announcement.message}</p>
+                      <span>{formatAnnouncementDate(announcement.createdAt)}</span>
+                    </div>
+                  ))}
                 {!!messageLoadError && (
                   <p className="muted">{messageLoadError}</p>
                 )}
-                {messages.length === 0 && (
+                {!isAnnouncementChat && messages.length === 0 && (
                   <p className="muted">No messages yet.</p>
                 )}
-                {messageItems.map((message) => (
+                {!isAnnouncementChat &&
+                  messageItems.map((message) => (
                   <div key={message.id}>
                     {message.showDateDivider && (
                       <div className="chat-dateDivider">
@@ -814,49 +877,60 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))}
+                {isAnnouncementChat && announcements.length === 0 && (
+                  <p className="muted">No announcements have been published yet.</p>
+                )}
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="chat-composeShell">
-                <div className="chat-composeRow">
-                  <button
-                    type="button"
-                    className="chat-iconBtn"
-                    onClick={() => setShowLineupModal(true)}
-                    aria-label="Share lineup"
-                  >
-                    <AttachFileIcon />
-                  </button>
-
-                  <input
-                    className="input chat-composeInput"
-                    placeholder="Type a message"
-                    value={draft}
-                    onChange={(event) => {
-                      setDraft(event.target.value);
-                      if (composeError) setComposeError("");
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" && !event.shiftKey) {
-                        event.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                  />
-
-                  <button
-                    type="button"
-                    className="chat-sendBtn"
-                    onClick={sendMessage}
-                  >
-                    <SendIcon />
-                  </button>
+              {isAnnouncementChat ? (
+                <div className="chat-composeShell chat-composeShell--disabled">
+                  <p className="muted chat-composeError">
+                    Announcements are broadcast by admins only. Replies are disabled.
+                  </p>
                 </div>
-                {!!composeError && (
-                  <p className="muted chat-composeError">{composeError}</p>
-                )}
-              </div>
+              ) : (
+                <div className="chat-composeShell">
+                  <div className="chat-composeRow">
+                    <button
+                      type="button"
+                      className="chat-iconBtn"
+                      onClick={() => setShowLineupModal(true)}
+                      aria-label="Share lineup"
+                    >
+                      <AttachFileIcon />
+                    </button>
+
+                    <input
+                      className="input chat-composeInput"
+                      placeholder="Type a message"
+                      value={draft}
+                      onChange={(event) => {
+                        setDraft(event.target.value);
+                        if (composeError) setComposeError("");
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                          event.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      className="chat-sendBtn"
+                      onClick={sendMessage}
+                    >
+                      <SendIcon />
+                    </button>
+                  </div>
+                  {!!composeError && (
+                    <p className="muted chat-composeError">{composeError}</p>
+                  )}
+                </div>
+              )}
             </>
           )}
         </section>
