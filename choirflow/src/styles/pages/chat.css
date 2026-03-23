@@ -129,7 +129,6 @@
   padding: 14px;
   border: none;
   border-radius: 18px;
-  background: transparent;
   text-align: left;
   cursor: pointer;
   transition:
@@ -630,13 +629,12 @@
   }
 
   .chat-layout.is-chatOpen {
-    min-height: 60vh;
+    min-height: auto;
   }
 
   .chat-layout.is-chatOpen .chat-messagesPane {
-    min-height: 60vh;
-    height: 60vh;
-    max-height: 60vh;
+    min-height: 0;
+    height: auto;
     overflow: hidden;
   }
 
@@ -651,11 +649,10 @@
 
   .chat-filterBtn {
     min-width: 0;
-    min-height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 10px;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
     line-height: 1.2;
     white-space: nowrap;
@@ -669,10 +666,38 @@
 }
 
 @media (max-width: 640px) {
-  .chat-page {
-    width: 100%;
-    padding: 10px;
-    border-radius: 22px;
+  @media (max-width: 900px) {
+    .chat-page {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .chat-layout {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      grid-template-columns: 1fr;
+    }
+
+    .chat-layout.is-chatOpen {
+      min-height: auto;
+    }
+
+    .chat-sidebar,
+    .chat-messagesPane {
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .chat-sidebar {
+      border-right: none;
+      padding: 12px;
+    }
   }
 
   .chat-sidebar,
