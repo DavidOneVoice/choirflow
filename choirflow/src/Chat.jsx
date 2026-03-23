@@ -690,7 +690,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               <SearchIcon />
               <input
                 className="input chat-searchInput"
-                placeholder="Search users (min. 2 letters)"
+                placeholder="Search Users by email."
                 value={searchText}
                 autoComplete="off"
                 onChange={(event) => {
