@@ -187,6 +187,7 @@ export default function Chat({
   routeTarget,
   onClearRouteTarget,
   onAnnouncementsViewed,
+  announcementUnreadCount = 0,
 }) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -228,7 +229,7 @@ export default function Chat({
     return {
       id: ANNOUNCEMENTS_CHAT_ID,
       type: "announcement",
-      unreadCount: 0,
+      unreadCount: Number(announcementUnreadCount || 0),
       profile: {
         uid: ANNOUNCEMENTS_CHAT_ID,
         username: "Choir Flow",
@@ -242,7 +243,7 @@ export default function Chat({
           latestAnnouncement.updatedAt || latestAnnouncement.createdAt || null,
       },
     };
-  }, [latestAnnouncement]);
+  }, [announcementUnreadCount, latestAnnouncement]);
 
   const sortedChatList = useMemo(() => {
     return [...chatList].sort(
@@ -252,16 +253,21 @@ export default function Chat({
   }, [chatList]);
 
   const filteredChats = useMemo(() => {
-    const items =
-      announcementsChat && activeFilter === CHAT_FILTERS.all
-        ? [announcementsChat, ...sortedChatList]
-        : sortedChatList;
+    const items = announcementsChat
+      ? [announcementsChat, ...sortedChatList]
+      : sortedChatList;
 
     if (activeFilter === CHAT_FILTERS.unread) {
       return items.filter((item) => item.unreadCount > 0);
     }
     return items;
   }, [activeFilter, announcementsChat, sortedChatList]);
+
+  const unreadConversationCount = useMemo(() => {
+    const announcementUnread = announcementsChat?.unreadCount > 0 ? 1 : 0;
+    const directUnread = sortedChatList.filter((item) => item.unreadCount > 0).length;
+    return announcementUnread + directUnread;
+  }, [announcementsChat?.unreadCount, sortedChatList]);
 
   const showSearchResults =
     isSearchActive || (!!searchText.trim() && searchText.trim().length >= 2);
@@ -800,6 +806,7 @@ export default function Chat({
                 onClick={() => setActiveFilter(CHAT_FILTERS.unread)}
               >
                 Unread
+                {unreadConversationCount > 0 ? ` (${unreadConversationCount})` : ""}
               </button>
             </div>
 
