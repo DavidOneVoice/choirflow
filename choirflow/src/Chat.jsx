@@ -16,11 +16,11 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  where,
   setDoc,
   startAt,
   endAt,
   updateDoc,
-  where,
   increment,
 } from "firebase/firestore";
 import { db } from "./firebase/firebase";
@@ -248,17 +248,18 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   useEffect(() => {
     const announcementsQuery = query(
       collection(db, "announcements"),
-      where("isActive", "==", true),
-      orderBy("createdAt", "asc"),
+      orderBy("createdAt", "desc"),
     );
 
     const unsubscribe = onSnapshot(
       announcementsQuery,
       (snapshot) => {
-        const entries = snapshot.docs.map((item) => ({
-          id: item.id,
-          ...item.data(),
-        }));
+        const entries = snapshot.docs
+          .map((item) => ({
+            id: item.id,
+            ...item.data(),
+          }))
+          .filter((item) => item.isActive !== false);
         setAnnouncements(entries);
       },
       (error) => {

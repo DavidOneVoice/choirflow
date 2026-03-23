@@ -134,7 +134,7 @@ export default function AdminAnnouncements({ user }) {
   }, [user]);
 
   useEffect(() => {
-    if (!user?.uid || adminStatus !== "allowed") {
+    if (!user?.uid) {
       setAnnouncements([]);
       setListError("");
       return undefined;
@@ -149,10 +149,12 @@ export default function AdminAnnouncements({ user }) {
       announcementsQuery,
       (snapshot) => {
         setAnnouncements(
-          snapshot.docs.map((item) => ({
-            id: item.id,
-            ...item.data(),
-          })),
+          snapshot.docs
+            .map((item) => ({
+              id: item.id,
+              ...item.data(),
+            }))
+            .filter((item) => item.isActive !== false),
         );
         setListError("");
       },
@@ -355,7 +357,14 @@ export default function AdminAnnouncements({ user }) {
             </p>
           ) : null}
 
-          {canPublish && announcements.length > 0 ? (
+          {!canPublish && announcements.length > 0 ? (
+            <p className="admin-announcements__feedback" role="status">
+              Published announcements are visible below. Editing and deletion
+              remain available only for accounts with announcement admin access.
+            </p>
+          ) : null}
+
+          {announcements.length > 0 ? (
             <div className="admin-announcements__list">
               {announcements.map((announcement) => {
                 const isEditing = editingId === announcement.id;
@@ -372,7 +381,7 @@ export default function AdminAnnouncements({ user }) {
                           Published {formatAnnouncementDate(announcement.createdAt)}
                           {announcement.updatedAt?.toMillis?.() > announcement.createdAt?.toMillis?.() ? " • Edited" : ""}
                         </p>
-                        {isEditing ? (
+                        {isEditing && canPublish ? (
                           <input
                             type="text"
                             className="input admin-announcements__input"
@@ -387,58 +396,62 @@ export default function AdminAnnouncements({ user }) {
                       </div>
 
                       <div className="admin-announcements__itemActions">
-                        {isEditing ? (
-                          <>
+                        {canPublish ? (
+                          isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                className="admin-announcements__iconButton"
+                                onClick={handleSaveEdit}
+                                disabled={
+                                  isBusy || !trimmedEditTitle || !trimmedEditMessage
+                                }
+                                aria-label="Save announcement"
+                                title="Save announcement"
+                              >
+                                <SaveOutlinedIcon fontSize="small" />
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-announcements__iconButton"
+                                onClick={resetEditor}
+                                disabled={isBusy}
+                                aria-label="Cancel editing"
+                                title="Cancel editing"
+                              >
+                                <CloseOutlinedIcon fontSize="small" />
+                              </button>
+                            </>
+                          ) : (
                             <button
                               type="button"
                               className="admin-announcements__iconButton"
-                              onClick={handleSaveEdit}
-                              disabled={
-                                isBusy || !trimmedEditTitle || !trimmedEditMessage
-                              }
-                              aria-label="Save announcement"
-                              title="Save announcement"
+                              onClick={() => startEditing(announcement)}
+                              disabled={!!busyId}
+                              aria-label="Edit announcement"
+                              title="Edit announcement"
                             >
-                              <SaveOutlinedIcon fontSize="small" />
+                              <EditOutlinedIcon fontSize="small" />
                             </button>
-                            <button
-                              type="button"
-                              className="admin-announcements__iconButton"
-                              onClick={resetEditor}
-                              disabled={isBusy}
-                              aria-label="Cancel editing"
-                              title="Cancel editing"
-                            >
-                              <CloseOutlinedIcon fontSize="small" />
-                            </button>
-                          </>
-                        ) : (
+                          )
+                        ) : null}
+
+                        {canPublish ? (
                           <button
                             type="button"
-                            className="admin-announcements__iconButton"
-                            onClick={() => startEditing(announcement)}
-                            disabled={!!busyId}
-                            aria-label="Edit announcement"
-                            title="Edit announcement"
+                            className="admin-announcements__iconButton admin-announcements__iconButton--danger"
+                            onClick={() => handleDelete(announcement.id)}
+                            disabled={isBusy}
+                            aria-label="Delete announcement"
+                            title="Delete announcement"
                           >
-                            <EditOutlinedIcon fontSize="small" />
+                            <DeleteOutlineOutlinedIcon fontSize="small" />
                           </button>
-                        )}
-
-                        <button
-                          type="button"
-                          className="admin-announcements__iconButton admin-announcements__iconButton--danger"
-                          onClick={() => handleDelete(announcement.id)}
-                          disabled={isBusy}
-                          aria-label="Delete announcement"
-                          title="Delete announcement"
-                        >
-                          <DeleteOutlineOutlinedIcon fontSize="small" />
-                        </button>
+                        ) : null}
                       </div>
                     </div>
 
-                    {isEditing ? (
+                    {isEditing && canPublish ? (
                       <textarea
                         className="admin-announcements__textarea admin-announcements__textarea--compact"
                         value={editMessage}
@@ -454,12 +467,12 @@ export default function AdminAnnouncements({ user }) {
                 );
               })}
             </div>
-          ) : canPublish ? (
+          ) : (
             <p className="admin-announcements__empty">
               No announcements have been published yet. Once you send one, it
               will appear here and remain available for editing or deletion.
             </p>
-          ) : null}
+          )}
         </div>
       </div>
     </section>
