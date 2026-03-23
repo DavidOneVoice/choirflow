@@ -44,6 +44,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("home");
   const [unreadTotalCount, setUnreadTotalCount] = useState(0);
+  const [unreadChatTargets, setUnreadChatTargets] = useState([]);
   const [chatRouteTarget, setChatRouteTarget] = useState(null);
   const [chatToast, setChatToast] = useState(null);
   const [pathname, setPathname] = useState(window.location.pathname);
@@ -63,6 +64,7 @@ export default function App() {
       setUser(u);
       if (!u) {
         setUnreadTotalCount(0);
+        setUnreadChatTargets([]);
         hasShownInitialUnreadToast.current = false;
         latestChatSignaturesRef.current = new Map();
       }
@@ -147,6 +149,7 @@ export default function App() {
       (snapshot) => {
         let totalUnread = 0;
         const nextSignatures = new Map();
+        const unreadChats = [];
 
         snapshot.docs.forEach((chatDoc) => {
           const data = chatDoc.data();
@@ -159,11 +162,21 @@ export default function App() {
           );
           const profile = data.participantProfiles?.[otherId] || null;
           const createdAt = latest?.createdAt?.toMillis?.() || "no-time";
+          const sortTime = latest?.createdAt?.toMillis?.() || data.updatedAt?.toMillis?.() || 0;
           const signature = latest
             ? `${latest.senderId || ""}:${latest.text || ""}:${createdAt}`
             : "";
 
           nextSignatures.set(chatDoc.id, signature);
+
+          if (unread > 0) {
+            unreadChats.push({
+              chatId: chatDoc.id,
+              profile,
+              unreadCount: unread,
+              sortTime,
+            });
+          }
 
           if (!latest || latest.senderId === user.uid || unread <= 0) return;
 
@@ -178,16 +191,20 @@ export default function App() {
           }
         });
 
+        unreadChats.sort((a, b) => b.sortTime - a.sortTime);
+
         if (!hasShownInitialUnreadToast.current && totalUnread > 0) {
+          const onlyUnreadChat = unreadChats.length === 1 ? unreadChats[0] : null;
           setChatToast({
             title: "Unread messages",
             message: `You have ${totalUnread} unread message${totalUnread > 1 ? "s" : ""}.`,
-            chatId: null,
-            profile: null,
+            chatId: onlyUnreadChat?.chatId || null,
+            profile: onlyUnreadChat?.profile || null,
           });
           hasShownInitialUnreadToast.current = true;
         }
 
+        setUnreadChatTargets(unreadChats);
         setUnreadTotalCount(totalUnread);
         latestChatSignaturesRef.current = nextSignatures;
       },
@@ -225,13 +242,18 @@ export default function App() {
   );
 
   const goToChatFromToast = () => {
+    const targetChat =
+      chatToast?.chatId
+        ? { chatId: chatToast.chatId, profile: chatToast.profile }
+        : unreadChatTargets.length === 1
+          ? {
+              chatId: unreadChatTargets[0].chatId,
+              profile: unreadChatTargets[0].profile,
+            }
+          : null;
+
     setTab("chat");
-    if (chatToast?.chatId) {
-      setChatRouteTarget({
-        chatId: chatToast.chatId,
-        profile: chatToast.profile,
-      });
-    }
+    setChatRouteTarget(targetChat);
     setChatToast(null);
   };
 

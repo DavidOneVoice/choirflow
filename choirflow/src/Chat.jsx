@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
@@ -117,6 +117,14 @@ function formatAnnouncementDate(timestamp) {
   });
 }
 
+function getConversationSortTime(item) {
+  return (
+    item?.latestMessage?.createdAt?.toMillis?.() ||
+    item?.updatedAt?.toMillis?.() ||
+    0
+  );
+}
+
 function formatConversationTimestamp(timestamp) {
   if (!timestamp?.toDate) return "";
 
@@ -178,17 +186,23 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     };
   }, [announcements]);
 
+  const sortedChatList = useMemo(() => {
+    return [...chatList].sort(
+      (left, right) => getConversationSortTime(right) - getConversationSortTime(left),
+    );
+  }, [chatList]);
+
   const filteredChats = useMemo(() => {
     const items =
       announcementsChat && activeFilter === CHAT_FILTERS.all
-        ? [announcementsChat, ...chatList]
-        : chatList;
+        ? [announcementsChat, ...sortedChatList]
+        : sortedChatList;
 
     if (activeFilter === CHAT_FILTERS.unread) {
       return items.filter((item) => item.unreadCount > 0);
     }
     return items;
-  }, [activeFilter, announcementsChat, chatList]);
+  }, [activeFilter, announcementsChat, sortedChatList]);
 
   const showSearchResults =
     isSearchActive || (!!searchText.trim() && searchText.trim().length >= 2);
@@ -391,16 +405,16 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
     const matching = chatList.find((item) => item.id === routeTarget.chatId);
     if (matching) {
-      setActiveChat({ id: matching.id, profile: matching.profile });
+      openConversation(matching);
       onClearRouteTarget?.();
       return;
     }
 
     if (routeTarget.profile) {
-      setActiveChat({ id: routeTarget.chatId, profile: routeTarget.profile });
+      openConversation({ id: routeTarget.chatId, profile: routeTarget.profile });
       onClearRouteTarget?.();
     }
-  }, [chatList, routeTarget, onClearRouteTarget]);
+  }, [chatList, routeTarget, onClearRouteTarget, openConversation]);
 
   useEffect(() => {
     const chatId = activeChat?.id;
@@ -584,6 +598,10 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     }
   };
 
+  const openConversation = useCallback((chat) => {
+    setActiveChat({ id: chat.id, profile: chat.profile });
+  }, []);
+
   const closeActiveChat = () => {
     setActiveChat(null);
     setMessages([]);
@@ -727,9 +745,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   className={`chat-conversationItem ${
                     activeChat?.id === item.id ? "is-active" : ""
                   }`}
-                  onClick={() =>
-                    setActiveChat({ id: item.id, profile: item.profile })
-                  }
+                  onClick={() => openConversation(item)}
                 >
                   <div className="chat-avatar" aria-hidden="true">
                     {getAvatarLabel(item.profile)}
@@ -756,20 +772,22 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     </p>
                   </div>
 
-                  <span className="chat-conversationTime">
-                    {formatConversationTimestamp(
-                      item.latestMessage?.createdAt || item.updatedAt,
-                    )}
-                  </span>
-
-                  {item.unreadCount > 0 && (
-                    <span
-                      className="chat-unreadBadge"
-                      aria-label={`${item.unreadCount} unread`}
-                    >
-                      {item.unreadCount > 99 ? "99+" : item.unreadCount}
+                  <div className="chat-conversationMeta">
+                    <span className="chat-conversationTime">
+                      {formatConversationTimestamp(
+                        item.latestMessage?.createdAt || item.updatedAt,
+                      )}
                     </span>
-                  )}
+
+                    {item.unreadCount > 0 && (
+                      <span
+                        className="chat-unreadBadge"
+                        aria-label={`${item.unreadCount} unread`}
+                      >
+                        {item.unreadCount > 99 ? "99+" : item.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </button>
               ))}
             </section>
