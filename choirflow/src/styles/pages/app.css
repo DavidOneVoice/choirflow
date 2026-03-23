@@ -227,3 +227,115 @@
     width: 100%;
   }
 }
+
+
+.admin-announcements__history {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-announcements__historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-announcements__historyHeader h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #10281a;
+}
+
+.admin-announcements__historyHeader span {
+  color: #5f6f65;
+  font-weight: 700;
+}
+
+.admin-announcements__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-announcements__item {
+  display: grid;
+  gap: 0.9rem;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.admin-announcements__itemHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-announcements__itemHeader h3 {
+  margin: 0.35rem 0 0;
+  color: #10281a;
+}
+
+.admin-announcements__itemMeta {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #708078;
+}
+
+.admin-announcements__itemBody {
+  margin: 0;
+  color: #4f6258;
+  line-height: 1.65;
+}
+
+.admin-announcements__itemActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-announcements__iconButton {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(247, 250, 248, 0.98);
+  color: #183f28;
+}
+
+.admin-announcements__iconButton:hover:not(:disabled) {
+  border-color: rgba(28, 110, 63, 0.18);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.admin-announcements__iconButton--danger {
+  color: #b42318;
+}
+
+.admin-announcements__textarea--compact {
+  min-height: 132px;
+}
+
+.admin-announcements__empty {
+  margin: 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(247, 250, 248, 0.92);
+  color: #5f6f65;
+}
+
+@media (max-width: 640px) {
+  .admin-announcements__historyHeader,
+  .admin-announcements__itemHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-announcements__itemActions {
+    justify-content: flex-end;
+  }
+}

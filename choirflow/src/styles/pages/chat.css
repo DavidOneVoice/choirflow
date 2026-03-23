@@ -375,30 +375,43 @@
 
 
 .announcement-card {
-  width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #3f3dff, #00c2a8);
-  color: white;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  margin-bottom: 12px;
+  width: min(100%, 540px);
+  padding: 16px 18px;
+  border-radius: 22px;
+  align-self: flex-start;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 241, 0.96));
+  border: 1px solid rgba(28, 110, 63, 0.12);
+  color: #163423;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+}
+
+.announcement-card__meta {
+  margin-bottom: 10px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f6a3a;
 }
 
 .announcement-card h4 {
-  margin: 0 0 6px;
-  font-weight: 700;
+  margin: 0 0 8px;
+  font-weight: 800;
+  color: #10281a;
 }
 
 .announcement-card p {
   margin: 0;
-  opacity: 0.95;
+  color: #4f6258;
+  line-height: 1.6;
 }
 
 .announcement-card span {
   display: block;
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 12px;
-  opacity: 0.8;
+  font-weight: 700;
+  color: #708078;
 }
 
 .chat-conversationTime {

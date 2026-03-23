@@ -31,7 +31,7 @@ const CHAT_FILTERS = {
   unread: "unread",
 };
 
-const ANNOUNCEMENTS_CHAT_ID = "__announcements__";
+const ANNOUNCEMENTS_CHAT_ID = "announcements-feed";
 const SEARCH_DEBOUNCE_MS = 220;
 
 function getDisplayName(profile) {
@@ -166,7 +166,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
       unreadCount: 0,
       profile: {
         uid: ANNOUNCEMENTS_CHAT_ID,
-        username: "Announcements",
+        username: "Choir Flow",
         email: "",
         isOnline: true,
       },
@@ -198,7 +198,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     const announcementsQuery = query(
       collection(db, "announcements"),
       where("isActive", "==", true),
-      orderBy("createdAt", "desc"),
+      orderBy("createdAt", "asc"),
     );
 
     const unsubscribe = onSnapshot(
@@ -276,8 +276,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   }, [user?.uid]);
 
   useEffect(() => {
-    if (!activeChat?.id) {
+    if (!activeChat?.id || activeChat.id === ANNOUNCEMENTS_CHAT_ID) {
       setMessages([]);
+      setMessageLoadError("");
       return;
     }
 
@@ -315,7 +316,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   }, [activeChat?.id]);
 
   useEffect(() => {
-    if (!activeChat?.id || !messages.length || !user?.uid) return;
+    if (!activeChat?.id || activeChat.id === ANNOUNCEMENTS_CHAT_ID || !messages.length || !user?.uid) return;
 
     const unreadIncoming = messages.filter(
       (message) =>
@@ -357,7 +358,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   }, [messages, activeChat?.id]);
 
   useEffect(() => {
-    if (!activeChat?.id) return;
+    if (!activeChat?.id || activeChat.id === ANNOUNCEMENTS_CHAT_ID) return;
 
     const targetId = activeChat?.profile?.uid;
     if (!targetId) return;
@@ -737,13 +738,13 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   <div className="chat-conversationBody">
                     <div className="chat-userRow">
                       <p className="chat-userName">
-                        {getDisplayName(item.profile)}
+                        {item.type === "announcement" ? "Choir Flow" : getDisplayName(item.profile)}
                       </p>
                       <span
                         className={`chat-userStatus ${item.profile?.isOnline ? "is-online" : ""}`}
                       >
                         {item.type === "announcement"
-                          ? "Read only"
+                          ? "CF"
                           : item.profile?.isOnline
                             ? "Online"
                             : "Offline"}
@@ -807,7 +808,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     {getAvatarLabel(activeChat.profile)}
                   </div>
                   <h3 className="chat-paneTitle">
-                    {getDisplayName(activeChat.profile)}
+                    {isAnnouncementChat ? "Choir Flow" : getDisplayName(activeChat.profile)}
                   </h3>
                 </div>
                 <div className="chat-panePresence">
@@ -817,7 +818,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   />
                   <p className="chat-userStatus">
                     {isAnnouncementChat
-                      ? "Read-only broadcast feed"
+                      ? "CF"
                       : activeChat.profile?.isOnline
                       ? "Online"
                       : formatLastSeen(activeChat.profile?.lastSeenAt)}
@@ -828,11 +829,12 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               <div className="chat-messagesList">
                 {isAnnouncementChat &&
                   announcements.map((announcement) => (
-                    <div key={announcement.id} className="announcement-card">
+                    <article key={announcement.id} className="announcement-card">
+                      <div className="announcement-card__meta">CF</div>
                       <h4>{announcement.title}</h4>
                       <p>{announcement.message}</p>
                       <span>{formatAnnouncementDate(announcement.createdAt)}</span>
-                    </div>
+                    </article>
                   ))}
                 {!!messageLoadError && (
                   <p className="muted">{messageLoadError}</p>
@@ -884,13 +886,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 <div ref={messagesEndRef} />
               </div>
 
-              {isAnnouncementChat ? (
-                <div className="chat-composeShell chat-composeShell--disabled">
-                  <p className="muted chat-composeError">
-                    Announcements are broadcast by admins only. Replies are disabled.
-                  </p>
-                </div>
-              ) : (
+              {isAnnouncementChat ? null : (
                 <div className="chat-composeShell">
                   <div className="chat-composeRow">
                     <button
