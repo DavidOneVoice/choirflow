@@ -7,11 +7,19 @@
 
 .screen-center {
   flex: 1;
+  min-height: 0;
   display: flex;
   justify-content: center;
   padding: 18px;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+.screen-center--chat {
+  align-items: stretch;
+  padding: 12px;
+  overflow: hidden;
 }
 
 /* Splash stays green + white, but more premium */
