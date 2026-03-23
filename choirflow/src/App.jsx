@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AdminAnnouncements from "./AdminAnnouncements.jsx";
 import logo from "./assets/logo.png";
 import Auth from "./Auth.jsx";
@@ -45,13 +45,37 @@ export default function App() {
   const [tab, setTab] = useState("home");
   const [unreadTotalCount, setUnreadTotalCount] = useState(0);
   const [unreadChatTargets, setUnreadChatTargets] = useState([]);
+  const [announcementUnreadCount, setAnnouncementUnreadCount] = useState(0);
   const [chatRouteTarget, setChatRouteTarget] = useState(null);
   const [chatToast, setChatToast] = useState(null);
   const [pathname, setPathname] = useState(window.location.pathname);
   const isAdminRoute = pathname === "/admin-announcements";
   const hasShownInitialUnreadToast = useRef(false);
   const latestChatSignaturesRef = useRef(new Map());
+  const announcementStorageKey = user?.uid
+    ? `choirflow_last_seen_announcement_${user.uid}`
+    : "";
 
+  const readStoredAnnouncementId = useCallback(() => {
+    if (!announcementStorageKey) return "";
+
+    try {
+      return window.localStorage.getItem(announcementStorageKey) || "";
+    } catch (error) {
+      console.error("Failed to read stored announcement state", error);
+      return "";
+    }
+  }, [announcementStorageKey]);
+
+  const writeStoredAnnouncementId = useCallback((announcementId) => {
+    if (!announcementStorageKey || !announcementId) return;
+
+    try {
+      window.localStorage.setItem(announcementStorageKey, announcementId);
+    } catch (error) {
+      console.error("Failed to persist announcement state", error);
+    }
+  }, [announcementStorageKey]);
 
   useEffect(() => {
     const handlePopState = () => setPathname(window.location.pathname);
@@ -65,6 +89,7 @@ export default function App() {
       if (!u) {
         setUnreadTotalCount(0);
         setUnreadChatTargets([]);
+        setChatToast(null);
         hasShownInitialUnreadToast.current = false;
         latestChatSignaturesRef.current = new Map();
       }
@@ -217,6 +242,74 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const announcementsQuery = query(
+      collection(db, "announcements"),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      announcementsQuery,
+      (snapshot) => {
+        const activeAnnouncements = snapshot.docs
+          .map((item) => ({ id: item.id, ...item.data() }))
+          .filter((item) => item.isActive !== false);
+
+        const latestAnnouncement = [...activeAnnouncements].sort((left, right) => {
+          const rightTime =
+            right.updatedAt?.toMillis?.() ||
+            right.createdAt?.toMillis?.() ||
+            0;
+          const leftTime =
+            left.updatedAt?.toMillis?.() ||
+            left.createdAt?.toMillis?.() ||
+            0;
+
+          return rightTime - leftTime;
+        })[0];
+
+        if (!latestAnnouncement?.id) {
+          setAnnouncementUnreadCount(0);
+          return;
+        }
+
+        const storedAnnouncementId = readStoredAnnouncementId();
+        const isUnread = storedAnnouncementId !== latestAnnouncement.id;
+
+        setAnnouncementUnreadCount(isUnread ? 1 : 0);
+
+        if (!storedAnnouncementId) {
+          writeStoredAnnouncementId(latestAnnouncement.id);
+          return;
+        }
+
+        if (storedAnnouncementId === latestAnnouncement.id) return;
+
+        setChatToast({
+          title: "Choir Flow",
+          message:
+            latestAnnouncement.title ||
+            latestAnnouncement.message ||
+            "A new announcement is available.",
+          chatId: "announcements-feed",
+          profile: {
+            uid: "announcements-feed",
+            username: "Choir Flow",
+            email: "",
+            isOnline: true,
+          },
+        });
+      },
+      (error) => {
+        console.error("Failed to load announcement notifications", error);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [readStoredAnnouncementId, user?.uid, writeStoredAnnouncementId]);
+
+  useEffect(() => {
     document.title = "ChoirFlow";
 
     const fadeTimer = setTimeout(() => {
@@ -236,10 +329,22 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [tab]);
 
+  const combinedUnreadCount = unreadTotalCount + announcementUnreadCount;
+
   const showChatUnreadBadge = useMemo(
-    () => unreadTotalCount > 0,
-    [unreadTotalCount],
+    () => combinedUnreadCount > 0,
+    [combinedUnreadCount],
   );
+
+  const handleAnnouncementsViewed = (announcement) => {
+    if (!announcement?.id) return;
+
+    writeStoredAnnouncementId(announcement.id);
+    setAnnouncementUnreadCount(0);
+    setChatToast((currentToast) =>
+      currentToast?.chatId === "announcements-feed" ? null : currentToast,
+    );
+  };
 
   const goToChatFromToast = () => {
     const targetChat =
@@ -324,6 +429,7 @@ export default function App() {
                 user={user}
                 routeTarget={chatRouteTarget}
                 onClearRouteTarget={() => setChatRouteTarget(null)}
+                onAnnouncementsViewed={handleAnnouncementsViewed}
               />
             );
           }
@@ -450,9 +556,9 @@ export default function App() {
           {showChatUnreadBadge && (
             <span
               className="nav-chatUnreadBadge"
-              aria-label={`${unreadTotalCount} unread messages`}
+              aria-label={`${combinedUnreadCount} unread messages`}
             >
-              {unreadTotalCount > 99 ? "99+" : unreadTotalCount}
+              {combinedUnreadCount > 99 ? "99+" : combinedUnreadCount}
             </span>
           )}
         </button>
