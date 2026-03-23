@@ -163,11 +163,7 @@ function getConversationSortTime(item) {
 }
 
 function getAnnouncementSortTime(item) {
-  return (
-    item?.updatedAt?.toMillis?.() ||
-    item?.createdAt?.toMillis?.() ||
-    0
-  );
+  return item?.updatedAt?.toMillis?.() || item?.createdAt?.toMillis?.() || 0;
 }
 
 function formatConversationTimestamp(timestamp) {
@@ -216,7 +212,8 @@ export default function Chat({
   const searchDebounceRef = useRef(null);
   const sortedAnnouncements = useMemo(() => {
     return [...announcements].sort(
-      (left, right) => getAnnouncementSortTime(left) - getAnnouncementSortTime(right),
+      (left, right) =>
+        getAnnouncementSortTime(left) - getAnnouncementSortTime(right),
     );
   }, [announcements]);
 
@@ -238,7 +235,8 @@ export default function Chat({
         email: "",
         isOnline: true,
       },
-      updatedAt: latestAnnouncement.updatedAt || latestAnnouncement.createdAt || null,
+      updatedAt:
+        latestAnnouncement.updatedAt || latestAnnouncement.createdAt || null,
       latestMessage: {
         text: latestAnnouncement.title || latestAnnouncement.message,
         createdAt:
@@ -260,7 +258,8 @@ export default function Chat({
       : [...sortedChatList];
 
     const sortedItems = items.sort(
-      (left, right) => getConversationSortTime(right) - getConversationSortTime(left),
+      (left, right) =>
+        getConversationSortTime(right) - getConversationSortTime(left),
     );
 
     if (activeFilter === CHAT_FILTERS.unread) {
@@ -271,7 +270,9 @@ export default function Chat({
 
   const unreadConversationCount = useMemo(() => {
     const announcementUnread = announcementsChat?.unreadCount > 0 ? 1 : 0;
-    const directUnread = sortedChatList.filter((item) => item.unreadCount > 0).length;
+    const directUnread = sortedChatList.filter(
+      (item) => item.unreadCount > 0,
+    ).length;
     return announcementUnread + directUnread;
   }, [announcementsChat?.unreadCount, sortedChatList]);
 
@@ -449,7 +450,8 @@ export default function Chat({
   }, [messages, activeChat?.id]);
 
   useEffect(() => {
-    if (activeChat?.id !== ANNOUNCEMENTS_CHAT_ID || !latestAnnouncement?.id) return;
+    if (activeChat?.id !== ANNOUNCEMENTS_CHAT_ID || !latestAnnouncement?.id)
+      return;
 
     onAnnouncementsViewed?.(latestAnnouncement);
   }, [activeChat?.id, latestAnnouncement, onAnnouncementsViewed]);
@@ -722,8 +724,7 @@ export default function Chat({
               <span className="chat-eyebrow">Messages</span>
               <h2 className="chat-sidebarTitle">Conversations</h2>
               <p className="chat-sidebarSubtitle">
-                Search, manage, and respond with a clean WhatsApp-inspired
-                workspace.
+                Search, manage, and respond to chats.
               </p>
             </div>
             <div className="chat-searchBar">
@@ -812,7 +813,9 @@ export default function Chat({
                 onClick={() => setActiveFilter(CHAT_FILTERS.unread)}
               >
                 Unread
-                {unreadConversationCount > 0 ? ` (${unreadConversationCount})` : ""}
+                {unreadConversationCount > 0
+                  ? ` (${unreadConversationCount})`
+                  : ""}
               </button>
             </div>
 
