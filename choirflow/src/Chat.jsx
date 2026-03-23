@@ -182,7 +182,12 @@ function formatConversationTimestamp(timestamp) {
   });
 }
 
-export default function Chat({ user, routeTarget, onClearRouteTarget }) {
+export default function Chat({
+  user,
+  routeTarget,
+  onClearRouteTarget,
+  onAnnouncementsViewed,
+}) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [chatList, setChatList] = useState([]);
@@ -200,10 +205,25 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   const [showLineupModal, setShowLineupModal] = useState(false);
   const messagesEndRef = useRef(null);
   const searchDebounceRef = useRef(null);
-  const announcementsChat = useMemo(() => {
+  const latestAnnouncement = useMemo(() => {
     if (!announcements.length) return null;
 
-    const latestAnnouncement = announcements[0];
+    return [...announcements].sort((left, right) => {
+      const rightTime =
+        right.updatedAt?.toMillis?.() ||
+        right.createdAt?.toMillis?.() ||
+        0;
+      const leftTime =
+        left.updatedAt?.toMillis?.() ||
+        left.createdAt?.toMillis?.() ||
+        0;
+
+      return rightTime - leftTime;
+    })[0];
+  }, [announcements]);
+
+  const announcementsChat = useMemo(() => {
+    if (!latestAnnouncement) return null;
 
     return {
       id: ANNOUNCEMENTS_CHAT_ID,
@@ -215,13 +235,14 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
         email: "",
         isOnline: true,
       },
-      updatedAt: latestAnnouncement.createdAt || null,
+      updatedAt: latestAnnouncement.updatedAt || latestAnnouncement.createdAt || null,
       latestMessage: {
-        text: latestAnnouncement.message,
-        createdAt: latestAnnouncement.createdAt || null,
+        text: latestAnnouncement.title || latestAnnouncement.message,
+        createdAt:
+          latestAnnouncement.updatedAt || latestAnnouncement.createdAt || null,
       },
     };
-  }, [announcements]);
+  }, [latestAnnouncement]);
 
   const sortedChatList = useMemo(() => {
     return [...chatList].sort(
@@ -414,6 +435,12 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
       block: "end",
     });
   }, [messages, activeChat?.id]);
+
+  useEffect(() => {
+    if (activeChat?.id !== ANNOUNCEMENTS_CHAT_ID || !latestAnnouncement?.id) return;
+
+    onAnnouncementsViewed?.(latestAnnouncement);
+  }, [activeChat?.id, latestAnnouncement, onAnnouncementsViewed]);
 
   useEffect(() => {
     if (!activeChat?.id || activeChat.id === ANNOUNCEMENTS_CHAT_ID) return;
