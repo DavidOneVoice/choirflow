@@ -34,6 +34,33 @@ const CHAT_FILTERS = {
 const ANNOUNCEMENTS_CHAT_ID = "announcements-feed";
 const SEARCH_DEBOUNCE_MS = 220;
 
+const URL_PATTERN = /(https?:\/\/[^\s]+)/gi;
+
+function renderTextWithLinks(text) {
+  if (!text) return "";
+
+  return text.split(URL_PATTERN).map((part, index) => {
+    if (!part) return null;
+
+    if (URL_PATTERN.test(part)) {
+      URL_PATTERN.lastIndex = 0;
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={part}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {part}
+        </a>
+      );
+    }
+
+    URL_PATTERN.lastIndex = 0;
+    return <span key={`${index}-${part}`}>{part}</span>;
+  });
+}
+
 function getDisplayName(profile) {
   return profile?.username || profile?.email || "Unknown user";
 }
@@ -876,7 +903,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     >
                       <div className="announcement-card__meta">CF</div>
                       <h4>{announcement.title}</h4>
-                      <p>{announcement.message}</p>
+                      <p>{renderTextWithLinks(announcement.message)}</p>
                       <span>
                         {formatAnnouncementDate(announcement.createdAt)}
                       </span>
