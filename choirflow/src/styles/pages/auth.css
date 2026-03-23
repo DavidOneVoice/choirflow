@@ -53,6 +53,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-bottom: 1rem;
 }
 
 /* password row */
@@ -68,7 +69,7 @@
 .auth-eyeBtn {
   position: absolute;
   right: 10px;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
 
   width: 36px;
@@ -122,6 +123,10 @@
   color: var(--brand);
   text-decoration: underline;
   text-underline-offset: 3px;
+  border: none;
+  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  background-color: inherit;
 }
 
 /* small helper */
