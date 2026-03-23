@@ -102,10 +102,20 @@ function formatAnnouncementDate(timestamp) {
 
   const date = timestamp.toDate();
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  const startOfDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
   const msPerDay = 24 * 60 * 60 * 1000;
-  const dayDifference = Math.round((startOfToday.getTime() - startOfDate.getTime()) / msPerDay);
+  const dayDifference = Math.round(
+    (startOfToday.getTime() - startOfDate.getTime()) / msPerDay,
+  );
 
   if (dayDifference === 0) return "Today";
   if (dayDifference === 1) return "Yesterday";
@@ -188,7 +198,8 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
   const sortedChatList = useMemo(() => {
     return [...chatList].sort(
-      (left, right) => getConversationSortTime(right) - getConversationSortTime(left),
+      (left, right) =>
+        getConversationSortTime(right) - getConversationSortTime(left),
     );
   }, [chatList]);
 
@@ -206,7 +217,6 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
   const showSearchResults =
     isSearchActive || (!!searchText.trim() && searchText.trim().length >= 2);
-
 
   useEffect(() => {
     const announcementsQuery = query(
@@ -330,7 +340,13 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
   }, [activeChat?.id]);
 
   useEffect(() => {
-    if (!activeChat?.id || activeChat.id === ANNOUNCEMENTS_CHAT_ID || !messages.length || !user?.uid) return;
+    if (
+      !activeChat?.id ||
+      activeChat.id === ANNOUNCEMENTS_CHAT_ID ||
+      !messages.length ||
+      !user?.uid
+    )
+      return;
 
     const unreadIncoming = messages.filter(
       (message) =>
@@ -415,7 +431,10 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     }
 
     if (routeTarget.profile) {
-      openConversation({ id: routeTarget.chatId, profile: routeTarget.profile });
+      openConversation({
+        id: routeTarget.chatId,
+        profile: routeTarget.profile,
+      });
       onClearRouteTarget?.();
     }
   }, [chatList, routeTarget, onClearRouteTarget, openConversation]);
@@ -629,7 +648,7 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
 
   return (
     <div className="chat-page">
-      <div className="chat-layout">
+      <div className={`chat-layout ${isChatOpen ? "is-chatOpen" : ""}`}>
         {!isChatOpen && (
           <aside className="chat-sidebar">
             <div className="chat-sidebarHeader">
@@ -754,7 +773,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                   <div className="chat-conversationBody">
                     <div className="chat-userRow">
                       <p className="chat-userName">
-                        {item.type === "announcement" ? "Choir Flow" : getDisplayName(item.profile)}
+                        {item.type === "announcement"
+                          ? "Choir Flow"
+                          : getDisplayName(item.profile)}
                       </p>
                       <span
                         className={`chat-userStatus ${item.profile?.isOnline ? "is-online" : ""}`}
@@ -826,7 +847,9 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     {getAvatarLabel(activeChat.profile)}
                   </div>
                   <h3 className="chat-paneTitle">
-                    {isAnnouncementChat ? "Choir Flow" : getDisplayName(activeChat.profile)}
+                    {isAnnouncementChat
+                      ? "Choir Flow"
+                      : getDisplayName(activeChat.profile)}
                   </h3>
                 </div>
                 <div className="chat-panePresence">
@@ -838,8 +861,8 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                     {isAnnouncementChat
                       ? "CF"
                       : activeChat.profile?.isOnline
-                      ? "Online"
-                      : formatLastSeen(activeChat.profile?.lastSeenAt)}
+                        ? "Online"
+                        : formatLastSeen(activeChat.profile?.lastSeenAt)}
                   </p>
                 </div>
               </div>
@@ -847,11 +870,16 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
               <div className="chat-messagesList">
                 {isAnnouncementChat &&
                   announcements.map((announcement) => (
-                    <article key={announcement.id} className="announcement-card">
+                    <article
+                      key={announcement.id}
+                      className="announcement-card"
+                    >
                       <div className="announcement-card__meta">CF</div>
                       <h4>{announcement.title}</h4>
                       <p>{announcement.message}</p>
-                      <span>{formatAnnouncementDate(announcement.createdAt)}</span>
+                      <span>
+                        {formatAnnouncementDate(announcement.createdAt)}
+                      </span>
                     </article>
                   ))}
                 {!!messageLoadError && (
@@ -862,44 +890,46 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
                 )}
                 {!isAnnouncementChat &&
                   messageItems.map((message) => (
-                  <div key={message.id}>
-                    {message.showDateDivider && (
-                      <div className="chat-dateDivider">
-                        {message.dateLabel}
-                      </div>
-                    )}
+                    <div key={message.id}>
+                      {message.showDateDivider && (
+                        <div className="chat-dateDivider">
+                          {message.dateLabel}
+                        </div>
+                      )}
 
-                    <div
-                      className={`chat-messageGroup ${
-                        message.senderId === user.uid ? "is-me" : ""
-                      }`}
-                    >
                       <div
-                        className={`chat-messageBubble ${
+                        className={`chat-messageGroup ${
                           message.senderId === user.uid ? "is-me" : ""
                         }`}
                       >
-                        {message.text}
-                      </div>
+                        <div
+                          className={`chat-messageBubble ${
+                            message.senderId === user.uid ? "is-me" : ""
+                          }`}
+                        >
+                          {message.text}
+                        </div>
 
-                      <div
-                        className={`chat-metaRow ${
-                          message.senderId === user.uid ? "is-me" : ""
-                        }`}
-                      >
-                        <span>{formatTime(message.createdAt)}</span>
+                        <div
+                          className={`chat-metaRow ${
+                            message.senderId === user.uid ? "is-me" : ""
+                          }`}
+                        >
+                          <span>{formatTime(message.createdAt)}</span>
 
-                        {message.senderId === user.uid && (
-                          <span className="chat-tick">
-                            {message.readBy?.length > 1 ? "✓✓" : "✓"}
-                          </span>
-                        )}
+                          {message.senderId === user.uid && (
+                            <span className="chat-tick">
+                              {message.readBy?.length > 1 ? "✓✓" : "✓"}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
                   ))}
                 {isAnnouncementChat && announcements.length === 0 && (
-                  <p className="muted">No announcements have been published yet.</p>
+                  <p className="muted">
+                    No announcements have been published yet.
+                  </p>
                 )}
                 <div ref={messagesEndRef} />
               </div>
