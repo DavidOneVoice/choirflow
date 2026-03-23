@@ -314,7 +314,7 @@ export default function App() {
         </button>
       )}
 
-      <main className={`screen-center ${tab === "chat" ? "screen-center--chat" : ""}`.trim()}>
+      <main className="screen-center">
         {(() => {
           if (tab === "home") return <Home />;
           if (tab === "add") return <AddSong onAdded={() => setTab("home")} />;
