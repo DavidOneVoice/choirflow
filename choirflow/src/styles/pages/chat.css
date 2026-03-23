@@ -89,6 +89,7 @@
 }
 
 .chat-filterBtn {
+  min-width: 0;
   border: 1px solid transparent;
   border-radius: 999px;
   padding: 12px 16px;
@@ -97,6 +98,8 @@
   font-size: 0.92rem;
   font-weight: 800;
   letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
   transition:
     transform var(--t-fast) var(--ease),
     background var(--t-fast) var(--ease),
@@ -381,15 +384,22 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-width: 78%;
+  width: fit-content;
+  max-width: 60%;
+  align-self: flex-start;
+  align-items: flex-start;
 }
 
 .chat-messageGroup.is-me {
+  margin-left: auto;
   align-self: flex-end;
   align-items: flex-end;
 }
 
 .chat-messageBubble {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
   padding: 12px 15px;
   border-radius: 18px 18px 18px 6px;
   background: rgba(255, 255, 255, 0.95);
@@ -398,6 +408,9 @@
   font-size: 0.93rem;
   line-height: 1.45;
   color: #223129;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .chat-messageBubble.is-me {
@@ -436,6 +449,8 @@
 
 .chat-page {
   width: min(100%, 1120px);
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 18px;
   border-radius: 28px;
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -614,13 +629,42 @@
     grid-template-columns: 1fr;
   }
 
+  .chat-layout.is-chatOpen {
+    min-height: 60vh;
+  }
+
   .chat-layout.is-chatOpen .chat-messagesPane {
+    min-height: 60vh;
     height: 60vh;
     max-height: 60vh;
+    overflow: hidden;
   }
 
   .chat-sidebar {
     border-right: none;
+  }
+
+  .chat-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .chat-filterBtn {
+    min-width: 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 10px;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chat-messageGroup {
+    max-width: 72%;
   }
 }
 
