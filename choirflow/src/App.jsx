@@ -430,6 +430,7 @@ export default function App() {
                 routeTarget={chatRouteTarget}
                 onClearRouteTarget={() => setChatRouteTarget(null)}
                 onAnnouncementsViewed={handleAnnouncementsViewed}
+                announcementUnreadCount={announcementUnreadCount}
               />
             );
           }
