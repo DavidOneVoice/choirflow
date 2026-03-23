@@ -400,6 +400,10 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
     return () => unsubscribe();
   }, [activeChat?.id, activeChat?.profile?.uid]);
 
+  const openConversation = useCallback((chat) => {
+    setActiveChat({ id: chat.id, profile: chat.profile });
+  }, []);
+
   useEffect(() => {
     if (!routeTarget?.chatId) return;
 
@@ -597,10 +601,6 @@ export default function Chat({ user, routeTarget, onClearRouteTarget }) {
       setComposeError("Unable to send message right now. Please try again.");
     }
   };
-
-  const openConversation = useCallback((chat) => {
-    setActiveChat({ id: chat.id, profile: chat.profile });
-  }, []);
 
   const closeActiveChat = () => {
     setActiveChat(null);
