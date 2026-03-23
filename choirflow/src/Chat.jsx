@@ -162,6 +162,14 @@ function getConversationSortTime(item) {
   );
 }
 
+function getAnnouncementSortTime(item) {
+  return (
+    item?.updatedAt?.toMillis?.() ||
+    item?.createdAt?.toMillis?.() ||
+    0
+  );
+}
+
 function formatConversationTimestamp(timestamp) {
   if (!timestamp?.toDate) return "";
 
@@ -206,22 +214,16 @@ export default function Chat({
   const [showLineupModal, setShowLineupModal] = useState(false);
   const messagesEndRef = useRef(null);
   const searchDebounceRef = useRef(null);
-  const latestAnnouncement = useMemo(() => {
-    if (!announcements.length) return null;
-
-    return [...announcements].sort((left, right) => {
-      const rightTime =
-        right.updatedAt?.toMillis?.() ||
-        right.createdAt?.toMillis?.() ||
-        0;
-      const leftTime =
-        left.updatedAt?.toMillis?.() ||
-        left.createdAt?.toMillis?.() ||
-        0;
-
-      return rightTime - leftTime;
-    })[0];
+  const sortedAnnouncements = useMemo(() => {
+    return [...announcements].sort(
+      (left, right) => getAnnouncementSortTime(left) - getAnnouncementSortTime(right),
+    );
   }, [announcements]);
+
+  const latestAnnouncement = useMemo(() => {
+    if (!sortedAnnouncements.length) return null;
+    return sortedAnnouncements[sortedAnnouncements.length - 1];
+  }, [sortedAnnouncements]);
 
   const announcementsChat = useMemo(() => {
     if (!latestAnnouncement) return null;
@@ -254,13 +256,17 @@ export default function Chat({
 
   const filteredChats = useMemo(() => {
     const items = announcementsChat
-      ? [announcementsChat, ...sortedChatList]
-      : sortedChatList;
+      ? [...sortedChatList, announcementsChat]
+      : [...sortedChatList];
+
+    const sortedItems = items.sort(
+      (left, right) => getConversationSortTime(right) - getConversationSortTime(left),
+    );
 
     if (activeFilter === CHAT_FILTERS.unread) {
-      return items.filter((item) => item.unreadCount > 0);
+      return sortedItems.filter((item) => item.unreadCount > 0);
     }
-    return items;
+    return sortedItems;
   }, [activeFilter, announcementsChat, sortedChatList]);
 
   const unreadConversationCount = useMemo(() => {
@@ -931,7 +937,7 @@ export default function Chat({
 
               <div className="chat-messagesList">
                 {isAnnouncementChat &&
-                  announcements.map((announcement) => (
+                  sortedAnnouncements.map((announcement) => (
                     <article
                       key={announcement.id}
                       className="announcement-card"
@@ -988,7 +994,7 @@ export default function Chat({
                       </div>
                     </div>
                   ))}
-                {isAnnouncementChat && announcements.length === 0 && (
+                {isAnnouncementChat && sortedAnnouncements.length === 0 && (
                   <p className="muted">
                     No announcements have been published yet.
                   </p>
