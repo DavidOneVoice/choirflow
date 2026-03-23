@@ -1,6 +1,8 @@
 .chat-page {
   width: min(100%, 1120px);
-  height: auto;
+  height: 100%;
+  min-height: 0;
+  display: flex;
   padding: 18px;
   border-radius: 28px;
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -19,9 +21,11 @@
 }
 
 .chat-layout {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
-  min-height: 72vh;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
@@ -258,7 +262,8 @@
 .chat-messagesPane {
   display: flex;
   flex-direction: column;
-  min-height: 72vh;
+  height: 100%;
+  min-height: 0;
   min-width: 0;
   overflow: hidden;
   background: linear-gradient(
