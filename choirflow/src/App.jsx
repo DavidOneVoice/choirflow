@@ -43,7 +43,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("home");
-  const [unreadTotalCount, setUnreadTotalCount] = useState(0);
+  const [unreadConversationCount, setUnreadConversationCount] = useState(0);
   const [unreadChatTargets, setUnreadChatTargets] = useState([]);
   const [announcementUnreadCount, setAnnouncementUnreadCount] = useState(0);
   const [chatRouteTarget, setChatRouteTarget] = useState(null);
@@ -87,7 +87,7 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
       if (!u) {
-        setUnreadTotalCount(0);
+        setUnreadConversationCount(0);
         setUnreadChatTargets([]);
         setChatToast(null);
         hasShownInitialUnreadToast.current = false;
@@ -172,15 +172,12 @@ export default function App() {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        let totalUnread = 0;
         const nextSignatures = new Map();
         const unreadChats = [];
 
         snapshot.docs.forEach((chatDoc) => {
           const data = chatDoc.data();
           const unread = Number(data.unreadCounts?.[user.uid] || 0);
-          totalUnread += unread;
-
           const latest = data.latestMessage;
           const otherId = (data.participants || []).find(
             (id) => id !== user.uid,
@@ -218,11 +215,11 @@ export default function App() {
 
         unreadChats.sort((a, b) => b.sortTime - a.sortTime);
 
-        if (!hasShownInitialUnreadToast.current && totalUnread > 0) {
+        if (!hasShownInitialUnreadToast.current && unreadChats.length > 0) {
           const onlyUnreadChat = unreadChats.length === 1 ? unreadChats[0] : null;
           setChatToast({
             title: "Unread messages",
-            message: `You have ${totalUnread} unread message${totalUnread > 1 ? "s" : ""}.`,
+            message: `You have ${unreadChats.length} unread message${unreadChats.length > 1 ? "s" : ""}.`,
             chatId: onlyUnreadChat?.chatId || null,
             profile: onlyUnreadChat?.profile || null,
           });
@@ -230,7 +227,7 @@ export default function App() {
         }
 
         setUnreadChatTargets(unreadChats);
-        setUnreadTotalCount(totalUnread);
+        setUnreadConversationCount(unreadChats.length);
         latestChatSignaturesRef.current = nextSignatures;
       },
       (error) => {
@@ -329,12 +326,59 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [tab]);
 
-  const combinedUnreadCount = unreadTotalCount + announcementUnreadCount;
+  const combinedUnreadCount = unreadConversationCount + announcementUnreadCount;
 
   const showChatUnreadBadge = useMemo(
     () => combinedUnreadCount > 0,
     [combinedUnreadCount],
   );
+
+
+  useEffect(() => {
+    const totalUnreadChats = unreadChatTargets.length + (announcementUnreadCount > 0 ? 1 : 0);
+
+    if (totalUnreadChats === 0) {
+      hasShownInitialUnreadToast.current = false;
+      const clearToastTimer = window.setTimeout(() => {
+        setChatToast(null);
+      }, 0);
+
+      return () => window.clearTimeout(clearToastTimer);
+    }
+
+    const syncToastTimer = window.setTimeout(() => {
+      setChatToast((currentToast) => {
+        if (!currentToast || currentToast.title !== "Unread messages") return currentToast;
+
+        const onlyUnreadChat =
+          announcementUnreadCount > 0 && unreadChatTargets.length === 0
+            ? {
+                chatId: "announcements-feed",
+                profile: {
+                  uid: "announcements-feed",
+                  username: "Choir Flow",
+                  email: "",
+                  isOnline: true,
+                },
+              }
+            : unreadChatTargets.length === 1 && announcementUnreadCount === 0
+              ? {
+                  chatId: unreadChatTargets[0].chatId,
+                  profile: unreadChatTargets[0].profile,
+                }
+              : null;
+
+        return {
+          ...currentToast,
+          message: `You have ${totalUnreadChats} unread message${totalUnreadChats > 1 ? "s" : ""}.`,
+          chatId: onlyUnreadChat?.chatId || null,
+          profile: onlyUnreadChat?.profile || null,
+        };
+      });
+    }, 0);
+
+    return () => window.clearTimeout(syncToastTimer);
+  }, [announcementUnreadCount, unreadChatTargets]);
 
   const handleAnnouncementsViewed = (announcement) => {
     if (!announcement?.id) return;
