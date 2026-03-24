@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { auth, db } from "../../firebase/firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,11 +10,10 @@ import { useLineupDetails } from "../../hooks/useLineupDetails";
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import "./LineUpDetails.css";
 
-export default function LineUpDetails({ id, onBack, onEdit }) {
+export default function LineUpDetails({ id, onBack, onEdit, onShareInChat }) {
   const { lineup, loading } = useLineupDetails(id);
   const { recordings } = useLineupRecordings(id);
   const { confirm, confirmDialog } = useConfirmDialog();
-  const [showShareModal, setShowShareModal] = useState(false);
 
   const deleteLineup = async () => {
     const shouldDelete = await confirm({
@@ -55,6 +54,9 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
   }
 
   const title = lineup.title?.trim() ? lineup.title : "Line-Up";
+  const handleShareInChat = () => {
+    onShareInChat?.(lineup);
+  };
 
   return (
     <div className="card lineup-details">
@@ -125,7 +127,7 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
           Edit
         </button>
 
-        <button className="btn ghost lineup-details__shareBtn" onClick={() => setShowShareModal(true)}>
+        <button className="btn ghost lineup-details__shareBtn" onClick={handleShareInChat}>
           <ShareIcon fontSize="small" />
           Share in Chat
         </button>
@@ -144,20 +146,6 @@ export default function LineUpDetails({ id, onBack, onEdit }) {
           </button>
         </div>
       </footer>
-
-      {showShareModal && (
-        <div className="lineup-details__modalOverlay" role="dialog" aria-modal="true">
-          <div className="lineup-details__modalCard">
-            <h3>Line-up sharing is on the way</h3>
-            <p className="muted">
-              Secure lineup sharing in chat is being set up. This button will go live soon.
-            </p>
-            <button className="btn primary" onClick={() => setShowShareModal(false)}>
-              Understood
-            </button>
-          </div>
-        </div>
-      )}
 
       {confirmDialog}
     </div>

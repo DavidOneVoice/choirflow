@@ -7,7 +7,7 @@ import EditLineUp from "./EditLineUp";
 
 import "./styles/pages/lineup-list.css";
 
-export default function LineUpList({ onBack }) {
+export default function LineUpList({ onBack, onShareInChat }) {
   const [lineups, setLineups] = useState([]);
   const [viewId, setViewId] = useState(null);
   const [editId, setEditId] = useState(null);
@@ -62,6 +62,7 @@ export default function LineUpList({ onBack }) {
         id={viewId}
         onBack={() => setViewId(null)}
         onEdit={(id) => setEditId(id)}
+        onShareInChat={onShareInChat}
       />
     );
   }

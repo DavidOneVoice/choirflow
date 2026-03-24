@@ -22,6 +22,7 @@ import {
   endAt,
   updateDoc,
   increment,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase/firebase";
 import { deriveUsername } from "./utils/userProfile";
@@ -33,6 +34,10 @@ const CHAT_FILTERS = {
 
 const ANNOUNCEMENTS_CHAT_ID = "announcements-feed";
 const SEARCH_DEBOUNCE_MS = 220;
+const MESSAGE_TYPES = {
+  text: "text",
+  lineup: "lineup",
+};
 
 const URL_PATTERN = /(https?:\/\/[^\s]+)/gi;
 
@@ -186,12 +191,32 @@ function formatConversationTimestamp(timestamp) {
   });
 }
 
+function sanitizeSharedLineup(lineup, ownerId) {
+  if (!lineup) return null;
+  return {
+    sourceLineupId: lineup.id || null,
+    sourceOwnerId: ownerId || "",
+    title: (lineup.title || "").trim(),
+    key: lineup.key || "",
+    worship: Array.isArray(lineup.worship) ? lineup.worship : [],
+    praise: Array.isArray(lineup.praise) ? lineup.praise : [],
+    createdAt: Timestamp.now(),
+  };
+}
+
+function getLineupLabel(lineup) {
+  const title = lineup?.title?.trim();
+  return title || `Line-Up${lineup?.key ? ` (${lineup.key} Major)` : ""}`;
+}
+
 export default function Chat({
   user,
   routeTarget,
   onClearRouteTarget,
   onAnnouncementsViewed,
   announcementUnreadCount = 0,
+  lineupShareDraft,
+  onClearLineupShareDraft,
 }) {
   const [searchText, setSearchText] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -207,7 +232,11 @@ export default function Chat({
   const [chatLoadError, setChatLoadError] = useState("");
   const [messageLoadError, setMessageLoadError] = useState("");
   const [composeError, setComposeError] = useState("");
+  const [lineups, setLineups] = useState([]);
   const [showLineupModal, setShowLineupModal] = useState(false);
+  const [queuedLineupToShare, setQueuedLineupToShare] = useState(null);
+  const [lineupShareError, setLineupShareError] = useState("");
+  const [savingLineupMessageId, setSavingLineupMessageId] = useState("");
   const messagesEndRef = useRef(null);
   const searchDebounceRef = useRef(null);
   const sortedAnnouncements = useMemo(() => {
@@ -362,6 +391,37 @@ export default function Chat({
   }, [user?.uid]);
 
   useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(
+      collection(db, "users", user.uid, "lineups"),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const entries = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        }));
+        setLineups(entries);
+      },
+      (error) => {
+        console.error("Failed to load lineups for sharing", error);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!lineupShareDraft) return;
+    setQueuedLineupToShare(sanitizeSharedLineup(lineupShareDraft, user?.uid));
+    setShowLineupModal(false);
+    setLineupShareError("");
+  }, [lineupShareDraft, user?.uid]);
+
+  useEffect(() => {
     if (!activeChat?.id || activeChat.id === ANNOUNCEMENTS_CHAT_ID) {
       setMessages([]);
       setMessageLoadError("");
@@ -448,6 +508,20 @@ export default function Chat({
       block: "end",
     });
   }, [messages, activeChat?.id]);
+
+  useEffect(() => {
+    if (!queuedLineupToShare || !activeChat?.id) return;
+    if (activeChat.id === ANNOUNCEMENTS_CHAT_ID) return;
+
+    const shareQueuedLineup = async () => {
+      const wasSent = await sendLineupMessage(queuedLineupToShare, activeChat);
+      if (!wasSent) return;
+      setQueuedLineupToShare(null);
+      onClearLineupShareDraft?.();
+    };
+
+    shareQueuedLineup();
+  }, [activeChat, onClearLineupShareDraft, queuedLineupToShare, sendLineupMessage]);
 
   useEffect(() => {
     if (activeChat?.id !== ANNOUNCEMENTS_CHAT_ID || !latestAnnouncement?.id)
@@ -690,6 +764,92 @@ export default function Chat({
     }
   };
 
+  const sendLineupMessage = useCallback(async (lineupPayload, targetChat = activeChat) => {
+    if (!targetChat?.id) {
+      setComposeError("Open a conversation before sharing a line-up.");
+      return false;
+    }
+
+    const recipientId = targetChat.profile?.uid;
+    if (!recipientId) {
+      setComposeError("Unable to identify the recipient for this chat.");
+      return false;
+    }
+
+    if (!lineupPayload) {
+      setComposeError("Select a line-up first.");
+      return false;
+    }
+
+    const lineupName = getLineupLabel(lineupPayload);
+    const previewText = `Shared line-up: ${lineupName}`;
+    const message = {
+      type: MESSAGE_TYPES.lineup,
+      text: previewText,
+      senderId: user.uid,
+      createdAt: serverTimestamp(),
+      readBy: [user.uid],
+      lineup: lineupPayload,
+      savedBy: [],
+    };
+
+    try {
+      await addDoc(collection(db, "chats", targetChat.id, "messages"), message);
+      await updateDoc(doc(db, "chats", targetChat.id), {
+        latestMessage: {
+          text: previewText,
+          type: MESSAGE_TYPES.lineup,
+          senderId: user.uid,
+          createdAt: serverTimestamp(),
+          readBy: [user.uid],
+        },
+        [`unreadCounts.${user.uid}`]: 0,
+        [`unreadCounts.${recipientId}`]: increment(1),
+        updatedAt: serverTimestamp(),
+      });
+
+      setComposeError("");
+      setLineupShareError("");
+      return true;
+    } catch (error) {
+      console.error("Failed to share lineup", error);
+      setComposeError("Unable to share lineup right now. Please try again.");
+      return false;
+    }
+  }, [activeChat, user.uid]);
+
+  const saveIncomingLineup = useCallback(async (message) => {
+    if (!message?.lineup || !user?.uid || savingLineupMessageId) return;
+    setSavingLineupMessageId(message.id);
+    try {
+      const now = serverTimestamp();
+      const lineup = message.lineup;
+      await addDoc(collection(db, "users", user.uid, "lineups"), {
+        title: lineup.title || "",
+        key: lineup.key || "",
+        worship: Array.isArray(lineup.worship) ? lineup.worship : [],
+        praise: Array.isArray(lineup.praise) ? lineup.praise : [],
+        createdAt: now,
+        importedFromChat: {
+          chatId: activeChat?.id || "",
+          messageId: message.id,
+          sourceLineupId: lineup.sourceLineupId || "",
+          sourceOwnerId: lineup.sourceOwnerId || "",
+          senderId: message.senderId || "",
+        },
+      });
+
+      await updateDoc(doc(db, "chats", activeChat.id, "messages", message.id), {
+        savedBy: arrayUnion(user.uid),
+      });
+    } catch (error) {
+      console.error("Failed to save shared lineup", error);
+      setLineupShareError("Could not save this line-up. Please try again.");
+    } finally {
+      setSavingLineupMessageId("");
+    }
+  }, [activeChat?.id, savingLineupMessageId, user?.uid]);
+
   const closeActiveChat = () => {
     setActiveChat(null);
     setMessages([]);
@@ -726,6 +886,12 @@ export default function Chat({
               <p className="chat-sidebarSubtitle">
                 Search, manage, and respond to chats.
               </p>
+              {queuedLineupToShare && !activeChat && (
+                <p className="chat-shareHint">
+                  Select a chat to share{" "}
+                  <b>{getLineupLabel(queuedLineupToShare)}</b>.
+                </p>
+              )}
             </div>
             <div className="chat-searchBar">
               <SearchIcon />
@@ -973,13 +1139,61 @@ export default function Chat({
                           message.senderId === user.uid ? "is-me" : ""
                         }`}
                       >
-                        <div
-                          className={`chat-messageBubble ${
-                            message.senderId === user.uid ? "is-me" : ""
-                          }`}
-                        >
-                          {message.text}
-                        </div>
+                        {message.type === MESSAGE_TYPES.lineup ? (
+                          <div
+                            className={`chat-lineupCard ${
+                              message.senderId === user.uid ? "is-me" : ""
+                            }`}
+                          >
+                            <p className="chat-lineupCardLabel">
+                              {message.senderId === user.uid
+                                ? "You shared a line-up"
+                                : "Shared line-up"}
+                            </p>
+                            <h4>{getLineupLabel(message.lineup)}</h4>
+                            <p className="chat-lineupCardMeta">
+                              Key: <b>{message.lineup?.key || "Unknown"}</b> •{" "}
+                              {message.lineup?.worship?.length || 0} Worship •{" "}
+                              {message.lineup?.praise?.length || 0} Praise
+                            </p>
+                            {!!message.lineup?.worship?.length && (
+                              <p className="chat-lineupCardSongs">
+                                Worship: {message.lineup.worship.join(", ")}
+                              </p>
+                            )}
+                            {!!message.lineup?.praise?.length && (
+                              <p className="chat-lineupCardSongs">
+                                Praise: {message.lineup.praise.join(", ")}
+                              </p>
+                            )}
+
+                            {message.senderId !== user.uid && (
+                              <button
+                                type="button"
+                                className="btn primary chat-lineupSaveBtn"
+                                disabled={
+                                  (message.savedBy || []).includes(user.uid) ||
+                                  savingLineupMessageId === message.id
+                                }
+                                onClick={() => saveIncomingLineup(message)}
+                              >
+                                {(message.savedBy || []).includes(user.uid)
+                                  ? "Saved"
+                                  : savingLineupMessageId === message.id
+                                    ? "Saving..."
+                                    : "Save to my line-ups"}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            className={`chat-messageBubble ${
+                              message.senderId === user.uid ? "is-me" : ""
+                            }`}
+                          >
+                            {message.text}
+                          </div>
+                        )}
 
                         <div
                           className={`chat-metaRow ${
@@ -1011,7 +1225,10 @@ export default function Chat({
                     <button
                       type="button"
                       className="chat-iconBtn"
-                      onClick={() => setShowLineupModal(true)}
+                      onClick={() => {
+                        setShowLineupModal(true);
+                        setLineupShareError("");
+                      }}
                       aria-label="Share lineup"
                     >
                       <AttachFileIcon />
@@ -1044,6 +1261,9 @@ export default function Chat({
                   {!!composeError && (
                     <p className="muted chat-composeError">{composeError}</p>
                   )}
+                  {!!lineupShareError && (
+                    <p className="muted chat-composeError">{lineupShareError}</p>
+                  )}
                 </div>
               )}
             </>
@@ -1054,16 +1274,39 @@ export default function Chat({
       {showLineupModal && (
         <div className="chat-modalOverlay" role="dialog" aria-modal="true">
           <div className="chat-modalCard">
-            <h3>Line-up sharing is coming soon</h3>
-            <p className="muted">
-              We&apos;re finalizing secure line-up sharing in chat. Setup is in
-              progress.
-            </p>
-            <button
-              className="btn primary"
-              onClick={() => setShowLineupModal(false)}
-            >
-              Got it
+            <h3>Share a saved line-up</h3>
+            <p className="muted">Choose a line-up to send in this chat.</p>
+
+            <div className="chat-lineupPickerList">
+              {!lineups.length && (
+                <p className="muted">
+                  You do not have saved line-ups yet. Create one first.
+                </p>
+              )}
+              {lineups.map((lineup) => (
+                <button
+                  type="button"
+                  className="chat-lineupPickerItem"
+                  key={lineup.id}
+                  onClick={async () => {
+                    const payload = sanitizeSharedLineup(lineup, user.uid);
+                    const wasSent = await sendLineupMessage(payload);
+                    if (wasSent) {
+                      setShowLineupModal(false);
+                    }
+                  }}
+                >
+                  <h4>{getLineupLabel(lineup)}</h4>
+                  <p>
+                    Key: {lineup.key || "Unknown"} • {lineup.worship?.length || 0}{" "}
+                    Worship • {lineup.praise?.length || 0} Praise
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            <button className="btn ghost" onClick={() => setShowLineupModal(false)}>
+              Cancel
             </button>
           </div>
         </div>
