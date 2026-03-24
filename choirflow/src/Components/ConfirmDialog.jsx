@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import "../styles/components/confirm-dialog.css";
 
 export default function ConfirmDialog({
@@ -22,9 +23,9 @@ export default function ConfirmDialog({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [open, onCancel]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div className="confirm-dialog" role="dialog" aria-modal="true">
       <button
         className="confirm-dialog__backdrop"
@@ -50,6 +51,7 @@ export default function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
