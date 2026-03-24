@@ -16,6 +16,49 @@ import {
 } from "firebase/firestore";
 
 export default function CategoryPage({ category, onBack }) {
+  const praiseCategories = [
+    "General Praise",
+    "Fast Highlife",
+    "Slow Highlife",
+    "Makossa",
+    "Jazz",
+    "Afrobeat",
+    "Fuji",
+    "Juju",
+    "Folk",
+    "FunK",
+    "Apala",
+    "Raggae",
+    "Non-Nigerian Songs",
+    "Contemporary [Modern] Praise",
+    "Prayer Songs",
+    "Communion Praise",
+    "Anointing Praise",
+    "Woro [Igbo]",
+    "Woro [Yoruba]",
+    "Woro [Niger-Delta]",
+    "Revival Songs",
+    "Soul Winning Songs",
+    "Others",
+  ];
+
+  const allCategories = ["Worship", ...praiseCategories];
+
+  const musicalKeys = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+  ];
+
   const [songs, setSongs] = useState([]);
 
   const [editId, setEditId] = useState(null);
@@ -72,7 +115,9 @@ export default function CategoryPage({ category, onBack }) {
       title: (editData.title || "").trim(),
       key: (editData.key || "").trim(),
       category: (editData.category || "").trim(),
-      tier: (editData.tier || "").trim(),
+      tier: praiseCategories.includes(editData.category)
+        ? (editData.tier || "").trim()
+        : null,
     });
 
     setEditId(null);
@@ -146,7 +191,7 @@ export default function CategoryPage({ category, onBack }) {
                       placeholder="Title"
                     />
 
-                    <input
+                    <select
                       className="input catpage-input"
                       value={editData.key}
                       onChange={(e) =>
@@ -155,32 +200,53 @@ export default function CategoryPage({ category, onBack }) {
                           key: e.target.value,
                         }))
                       }
-                      placeholder="Key (e.g. F#)"
-                    />
+                    >
+                      <option value="">Select Key</option>
+                      {musicalKeys.map((k) => (
+                        <option key={k} value={k}>
+                          {k} Major
+                        </option>
+                      ))}
+                    </select>
 
-                    <input
+                    <select
                       className="input catpage-input"
                       value={editData.category}
                       onChange={(e) =>
                         setEditData((prev) => ({
                           ...prev,
                           category: e.target.value,
+                          tier: praiseCategories.includes(e.target.value)
+                            ? prev.tier
+                            : "",
                         }))
                       }
-                      placeholder="Category"
-                    />
+                    >
+                      <option value="">Select Category</option>
+                      {allCategories.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
 
-                    <input
-                      className="input catpage-input"
-                      value={editData.tier}
-                      onChange={(e) =>
-                        setEditData((prev) => ({
-                          ...prev,
-                          tier: e.target.value,
-                        }))
-                      }
-                      placeholder="Tier (optional)"
-                    />
+                    {praiseCategories.includes(editData.category) && (
+                      <select
+                        className="input catpage-input"
+                        value={editData.tier}
+                        onChange={(e) =>
+                          setEditData((prev) => ({
+                            ...prev,
+                            tier: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Select Tier</option>
+                        <option value="1">Tier 1 [Starting Songs]</option>
+                        <option value="2">Tier 2 [Mid-Level Energy Songs]</option>
+                        <option value="3">Tier 3 [High-Level Energy Songs]</option>
+                      </select>
+                    )}
                   </div>
 
                   <div className="catpage-actions">
