@@ -19,6 +19,7 @@ import "./styles/pages/lineup-edit.css";
 
 export default function EditLineUp({ id, onBack }) {
   const [loading, setLoading] = useState(true);
+  const [hasHydrated, setHasHydrated] = useState(false);
   const draftKey = getEditLineupDraftKey(id);
   const [title, setTitle] = useState("");
   const [keySel, setKeySel] = useState("");
@@ -51,31 +52,12 @@ export default function EditLineUp({ id, onBack }) {
     if (!auth.currentUser || !id) return;
 
     const load = async () => {
-      const ref = doc(db, "users", auth.currentUser.uid, "lineups", id);
-      const snap = await getDoc(ref);
+      try {
+        const ref = doc(db, "users", auth.currentUser.uid, "lineups", id);
+        const snap = await getDoc(ref);
 
-      if (snap.exists()) {
-        const data = snap.data();
-        setTitle(data.title || "");
-        setKeySel(data.key || "");
-        setWorshipList(Array.isArray(data.worship) ? data.worship : []);
-        setPraiseList(Array.isArray(data.praise) ? data.praise : []);
-      }
+        if (!snap.exists()) return;
 
-      setLoading(false);
-    };
-
-    load();
-  }, [id]);
-
-  useEffect(() => {
-    if (!auth.currentUser || !id) return;
-
-    const load = async () => {
-      const ref = doc(db, "users", auth.currentUser.uid, "lineups", id);
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
         const data = snap.data();
 
         const draft = loadDraft(draftKey);
@@ -97,16 +79,17 @@ export default function EditLineUp({ id, onBack }) {
           setWorshipList(Array.isArray(data.worship) ? data.worship : []);
           setPraiseList(Array.isArray(data.praise) ? data.praise : []);
         }
+      } finally {
+        setLoading(false);
+        setHasHydrated(true);
       }
-
-      setLoading(false);
     };
 
     load();
   }, [id, draftKey]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !hasHydrated) return;
 
     saveDraft(draftKey, {
       title,
@@ -125,6 +108,7 @@ export default function EditLineUp({ id, onBack }) {
     praiseInput,
     worshipList,
     praiseList,
+    hasHydrated,
   ]);
 
   const addWorship = () => {
