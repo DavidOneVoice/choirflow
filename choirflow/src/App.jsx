@@ -47,6 +47,7 @@ export default function App() {
   const [unreadChatTargets, setUnreadChatTargets] = useState([]);
   const [announcementUnreadCount, setAnnouncementUnreadCount] = useState(0);
   const [chatRouteTarget, setChatRouteTarget] = useState(null);
+  const [lineupShareDraft, setLineupShareDraft] = useState(null);
   const [chatToast, setChatToast] = useState(null);
   const [pathname, setPathname] = useState(window.location.pathname);
   const isAdminRoute = pathname === "/admin-announcements";
@@ -406,6 +407,13 @@ export default function App() {
     setChatToast(null);
   };
 
+  const handleShareLineupInChat = (lineup) => {
+    if (!lineup) return;
+    setLineupShareDraft(lineup);
+    setChatRouteTarget(null);
+    setTab("chat");
+  };
+
   if (showSplash) {
     return (
       <div className="app-root splash-root">
@@ -475,6 +483,8 @@ export default function App() {
                 onClearRouteTarget={() => setChatRouteTarget(null)}
                 onAnnouncementsViewed={handleAnnouncementsViewed}
                 announcementUnreadCount={announcementUnreadCount}
+                lineupShareDraft={lineupShareDraft}
+                onClearLineupShareDraft={() => setLineupShareDraft(null)}
               />
             );
           }
@@ -500,7 +510,12 @@ export default function App() {
             );
           }
           if (tab === "lineupsList")
-            return <LineUpList onBack={() => setTab("profile")} />;
+            return (
+              <LineUpList
+                onBack={() => setTab("profile")}
+                onShareInChat={handleShareLineupInChat}
+              />
+            );
           if (tab.startsWith("lineup_")) {
             const lineupId = tab.replace("lineup_", "");
             return (
@@ -508,6 +523,7 @@ export default function App() {
                 id={lineupId}
                 onBack={() => setTab("lineupsList")}
                 onEdit={(id) => setTab(`editLineup_${id}`)}
+                onShareInChat={handleShareLineupInChat}
               />
             );
           }
