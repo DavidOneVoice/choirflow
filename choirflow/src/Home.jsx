@@ -15,6 +15,49 @@ import {
 } from "firebase/firestore";
 
 export default function Home() {
+  const praiseCategories = [
+    "General Praise",
+    "Fast Highlife",
+    "Slow Highlife",
+    "Makossa",
+    "Jazz",
+    "Afrobeat",
+    "Fuji",
+    "Juju",
+    "Folk",
+    "FunK",
+    "Apala",
+    "Raggae",
+    "Non-Nigerian Songs",
+    "Contemporary [Modern] Praise",
+    "Prayer Songs",
+    "Communion Praise",
+    "Anointing Praise",
+    "Woro [Igbo]",
+    "Woro [Yoruba]",
+    "Woro [Niger-Delta]",
+    "Revival Songs",
+    "Soul Winning Songs",
+    "Others",
+  ];
+
+  const allCategories = ["Worship", ...praiseCategories];
+
+  const musicalKeys = [
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
+  ];
+
   const [songs, setSongs] = useState([]);
   const [sortBy, setSortBy] = useState("createdAt_desc");
 
@@ -83,7 +126,10 @@ export default function Home() {
   /* ---------------- SAVE EDIT ---------------- */
   const saveEdit = async () => {
     const ref = doc(db, "users", auth.currentUser.uid, "songs", editId);
-    await updateDoc(ref, { ...editData });
+    await updateDoc(ref, {
+      ...editData,
+      tier: praiseCategories.includes(editData.category) ? editData.tier : null,
+    });
     setEditId(null);
   };
 
@@ -153,32 +199,56 @@ export default function Home() {
                   placeholder="Title"
                 />
 
-                <input
+                <select
                   className="input"
                   value={editData.key}
                   onChange={(e) =>
                     setEditData({ ...editData, key: e.target.value })
                   }
-                  placeholder="Key"
-                />
+                >
+                  <option value="">Select Key</option>
+                  {musicalKeys.map((k) => (
+                    <option key={k} value={k}>
+                      {k} Major
+                    </option>
+                  ))}
+                </select>
 
-                <input
+                <select
                   className="input"
                   value={editData.category}
                   onChange={(e) =>
-                    setEditData({ ...editData, category: e.target.value })
+                    setEditData({
+                      ...editData,
+                      category: e.target.value,
+                      tier: praiseCategories.includes(e.target.value)
+                        ? editData.tier
+                        : "",
+                    })
                   }
-                  placeholder="Category"
-                />
+                >
+                  <option value="">Select Category</option>
+                  {allCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
 
-                <input
-                  className="input"
-                  value={editData.tier}
-                  onChange={(e) =>
-                    setEditData({ ...editData, tier: e.target.value })
-                  }
-                  placeholder="Tier"
-                />
+                {praiseCategories.includes(editData.category) && (
+                  <select
+                    className="input"
+                    value={editData.tier}
+                    onChange={(e) =>
+                      setEditData({ ...editData, tier: e.target.value })
+                    }
+                  >
+                    <option value="">Select Tier</option>
+                    <option value="1">Tier 1 [Starting Songs]</option>
+                    <option value="2">Tier 2 [Mid-Level Energy Songs]</option>
+                    <option value="3">Tier 3 [High-Level Energy Songs]</option>
+                  </select>
+                )}
               </div>
 
               <div className="home-editActions">
