@@ -308,6 +308,60 @@ export default function Chat({
   const showSearchResults =
     isSearchActive || (!!searchText.trim() && searchText.trim().length >= 2);
 
+  const sendLineupMessage = useCallback(async (lineupPayload, targetChat = activeChat) => {
+    if (!targetChat?.id) {
+      setComposeError("Open a conversation before sharing a line-up.");
+      return false;
+    }
+
+    const recipientId = targetChat.profile?.uid;
+    if (!recipientId) {
+      setComposeError("Unable to identify the recipient for this chat.");
+      return false;
+    }
+
+    if (!lineupPayload) {
+      setComposeError("Select a line-up first.");
+      return false;
+    }
+
+    const lineupName = getLineupLabel(lineupPayload);
+    const previewText = `Shared line-up: ${lineupName}`;
+    const message = {
+      type: MESSAGE_TYPES.lineup,
+      text: previewText,
+      senderId: user.uid,
+      createdAt: serverTimestamp(),
+      readBy: [user.uid],
+      lineup: lineupPayload,
+      savedBy: [],
+    };
+
+    try {
+      await addDoc(collection(db, "chats", targetChat.id, "messages"), message);
+      await updateDoc(doc(db, "chats", targetChat.id), {
+        latestMessage: {
+          text: previewText,
+          type: MESSAGE_TYPES.lineup,
+          senderId: user.uid,
+          createdAt: serverTimestamp(),
+          readBy: [user.uid],
+        },
+        [`unreadCounts.${user.uid}`]: 0,
+        [`unreadCounts.${recipientId}`]: increment(1),
+        updatedAt: serverTimestamp(),
+      });
+
+      setComposeError("");
+      setLineupShareError("");
+      return true;
+    } catch (error) {
+      console.error("Failed to share lineup", error);
+      setComposeError("Unable to share lineup right now. Please try again.");
+      return false;
+    }
+  }, [activeChat, user.uid]);
+
   useEffect(() => {
     const announcementsQuery = query(
       collection(db, "announcements"),
@@ -763,60 +817,6 @@ export default function Chat({
       setComposeError("Unable to send message right now. Please try again.");
     }
   };
-
-  const sendLineupMessage = useCallback(async (lineupPayload, targetChat = activeChat) => {
-    if (!targetChat?.id) {
-      setComposeError("Open a conversation before sharing a line-up.");
-      return false;
-    }
-
-    const recipientId = targetChat.profile?.uid;
-    if (!recipientId) {
-      setComposeError("Unable to identify the recipient for this chat.");
-      return false;
-    }
-
-    if (!lineupPayload) {
-      setComposeError("Select a line-up first.");
-      return false;
-    }
-
-    const lineupName = getLineupLabel(lineupPayload);
-    const previewText = `Shared line-up: ${lineupName}`;
-    const message = {
-      type: MESSAGE_TYPES.lineup,
-      text: previewText,
-      senderId: user.uid,
-      createdAt: serverTimestamp(),
-      readBy: [user.uid],
-      lineup: lineupPayload,
-      savedBy: [],
-    };
-
-    try {
-      await addDoc(collection(db, "chats", targetChat.id, "messages"), message);
-      await updateDoc(doc(db, "chats", targetChat.id), {
-        latestMessage: {
-          text: previewText,
-          type: MESSAGE_TYPES.lineup,
-          senderId: user.uid,
-          createdAt: serverTimestamp(),
-          readBy: [user.uid],
-        },
-        [`unreadCounts.${user.uid}`]: 0,
-        [`unreadCounts.${recipientId}`]: increment(1),
-        updatedAt: serverTimestamp(),
-      });
-
-      setComposeError("");
-      setLineupShareError("");
-      return true;
-    } catch (error) {
-      console.error("Failed to share lineup", error);
-      setComposeError("Unable to share lineup right now. Please try again.");
-      return false;
-    }
-  }, [activeChat, user.uid]);
 
   const saveIncomingLineup = useCallback(async (message) => {
     if (!message?.lineup || !user?.uid || savingLineupMessageId) return;
